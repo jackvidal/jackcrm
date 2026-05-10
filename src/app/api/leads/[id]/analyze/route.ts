@@ -75,21 +75,27 @@ export async function POST(
 
     return NextResponse.json({ analysis });
   } catch (err) {
+    // Full detail to server logs — never to the client.
     console.error("Analysis failed", err);
+
     if (err instanceof PageFetchError) {
       return NextResponse.json(
         {
           error: `לא ניתן היה לטעון את האתר: ${err.message}`,
-          reason: err.message,
         },
         { status: 502 },
       );
     }
-    return NextResponse.json(
-      {
-        error: `ניתוח האתר נכשל: ${err instanceof Error ? err.message : "שגיאה לא ידועה"}`,
-      },
-      { status: 500 },
-    );
+
+    // Sanitize: only show short, Hebrew-friendly messages.
+    // Anything that looks like a stack trace or framework internal
+    // gets replaced with a generic message.
+    const raw = err instanceof Error ? err.message : "שגיאה לא ידועה";
+    const sanitized =
+      raw.length > 200 || /\b(invocation|prisma|stack|TypeError)\b/i.test(raw)
+        ? "ניתוח האתר נכשל. אנא נסו שוב."
+        : raw;
+
+    return NextResponse.json({ error: sanitized }, { status: 500 });
   }
 }

@@ -46,7 +46,9 @@ export async function analyzeWebsite(url: string): Promise<AnalysisResult> {
   const client = getClient();
   const response = await client.messages.create({
     model: DEFAULT_MODEL,
-    max_tokens: 2048,
+    // Hebrew tokenizes more aggressively than English; 8192 leaves
+    // plenty of headroom for 5 well-developed sections.
+    max_tokens: 8192,
     // Cache the system prompt so subsequent analyses are cheaper.
     system: [
       {
@@ -60,28 +62,52 @@ export async function analyzeWebsite(url: string): Promise<AnalysisResult> {
     messages: [{ role: "user", content: userPrompt }],
   });
 
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      "הניתוח חרג ממגבלת האורך. נסו שוב או צמצמו את גודל הדף.",
+    );
+  }
+
   const toolUse = response.content.find(
     (block): block is Anthropic.ToolUseBlock =>
       block.type === "tool_use" && block.name === ANALYSIS_TOOL_NAME,
   );
   if (!toolUse) {
-    throw new Error("Model did not return structured analysis");
+    throw new Error("המודל לא החזיר ניתוח מובנה");
   }
 
-  const input = toolUse.input as {
+  const input = toolUse.input as Partial<{
     summary: string;
     issues: string[];
     opportunities: string[];
     recommendedServices: string[];
     recommendedNextSteps: string[];
-  };
+  }>;
+
+  // Defensive: every required field must be non-empty.
+  const required = [
+    "summary",
+    "issues",
+    "opportunities",
+    "recommendedServices",
+    "recommendedNextSteps",
+  ] as const;
+  const missing = required.filter((k) => {
+    const v = input[k];
+    return v === undefined || (Array.isArray(v) && v.length === 0);
+  });
+  if (missing.length > 0) {
+    throw new Error(
+      `הניתוח לא הושלם — חסרים שדות: ${missing.join(", ")}. נסו שוב.`,
+    );
+  }
 
   return {
-    summary: input.summary,
-    issues: input.issues,
-    opportunities: input.opportunities,
-    recommendedServices: input.recommendedServices,
-    recommendedNextSteps: input.recommendedNextSteps,
+    summary: input.summary!,
+    issues: input.issues!,
+    opportunities: input.opportunities!,
+    recommendedServices: input.recommendedServices!,
+    recommendedNextSteps: input.recommendedNextSteps!,
     modelUsed: DEFAULT_MODEL,
     raw: response,
   };
