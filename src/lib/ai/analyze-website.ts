@@ -1,5 +1,4 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { fetchPageContent } from "./fetch-page";
 import {
   ANALYSIS_SYSTEM_PROMPT,
   ANALYSIS_TOOL_DEFINITION,
@@ -30,26 +29,27 @@ function getClient(): Anthropic {
 }
 
 export async function analyzeWebsite(url: string): Promise<AnalysisResult> {
-  const page = await fetchPageContent(url);
-
-  const userPrompt = [
-    `URL: ${page.url}`,
-    page.title ? `Title: ${page.title}` : null,
-    page.description ? `Meta description: ${page.description}` : null,
-    "",
-    "תוכן הדף:",
-    page.text || "(תוכן ריק)",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  // Validate URL upfront — Claude's web_fetch will also validate, but
+  // failing early gives a cleaner error.
+  try {
+    new URL(url);
+  } catch {
+    throw new Error("כתובת אתר לא תקינה");
+  }
 
   const client = getClient();
+
+  // Server tool: Anthropic fetches the URL inline. No bot-blocking,
+  // no User-Agent games, no cheerio parsing on our side.
+  // Plus our custom tool that forces structured output.
+  const tools: Anthropic.Messages.ToolUnion[] = [
+    { type: "web_fetch_20260209", name: "web_fetch", max_uses: 2 },
+    ANALYSIS_TOOL_DEFINITION,
+  ];
+
   const response = await client.messages.create({
     model: DEFAULT_MODEL,
-    // Hebrew tokenizes more aggressively than English; 8192 leaves
-    // plenty of headroom for 5 well-developed sections.
     max_tokens: 8192,
-    // Cache the system prompt so subsequent analyses are cheaper.
     system: [
       {
         type: "text",
@@ -57,9 +57,16 @@ export async function analyzeWebsite(url: string): Promise<AnalysisResult> {
         cache_control: { type: "ephemeral" },
       },
     ],
-    tools: [ANALYSIS_TOOL_DEFINITION],
+    tools,
+    // Force the final model output to be a call to submit_website_analysis.
+    // web_fetch can still run as an intermediate step before this.
     tool_choice: { type: "tool", name: ANALYSIS_TOOL_NAME },
-    messages: [{ role: "user", content: userPrompt }],
+    messages: [
+      {
+        role: "user",
+        content: `נתח את האתר הבא והחזר ניתוח מובנה דרך הכלי ${ANALYSIS_TOOL_NAME}: ${url}`,
+      },
+    ],
   });
 
   if (response.stop_reason === "max_tokens") {
@@ -84,7 +91,6 @@ export async function analyzeWebsite(url: string): Promise<AnalysisResult> {
     recommendedNextSteps: string[];
   }>;
 
-  // Defensive: every required field must be non-empty.
   const required = [
     "summary",
     "issues",

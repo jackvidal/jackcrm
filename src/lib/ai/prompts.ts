@@ -16,7 +16,9 @@ export const ANALYSIS_SYSTEM_PROMPT = `אתה אנליסט שיווקי דיגי
 
 export const ANALYSIS_TOOL_NAME = "submit_website_analysis";
 
-export const ANALYSIS_TOOL_DEFINITION = {
+import type Anthropic from "@anthropic-ai/sdk";
+
+export const ANALYSIS_TOOL_DEFINITION: Anthropic.Tool = {
   name: ANALYSIS_TOOL_NAME,
   description:
     "החזרת ניתוח מובנה של אתר עסקי. כל השדות חייבים להיות בעברית ספציפית ומעשית.",
