@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { logoutAction } from "@/app/(auth)/actions";
 import { t } from "@/i18n/he";
 
@@ -26,7 +27,9 @@ export function Topbar({
         {t.dashboard.welcome}
         {fullName ? `, ${fullName}` : ""}
       </h1>
-      <DropdownMenu>
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
             <UserIcon className="h-4 w-4" />
@@ -54,7 +57,8 @@ export function Topbar({
             </DropdownMenuItem>
           </form>
         </DropdownMenuContent>
-      </DropdownMenu>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }

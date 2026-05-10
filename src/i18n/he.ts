@@ -151,6 +151,10 @@ export const t = {
     invalidInput: "קלט לא תקין",
     networkError: "תקלת רשת",
   },
+  theme: {
+    switchToDark: "עבור למצב כהה",
+    switchToLight: "עבור למצב בהיר",
+  },
   common: {
     loading: "טוען...",
     saving: "שומר...",
