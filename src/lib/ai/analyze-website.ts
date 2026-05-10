@@ -58,16 +58,28 @@ export async function analyzeWebsite(url: string): Promise<AnalysisResult> {
       },
     ],
     tools,
-    // Force the final model output to be a call to submit_website_analysis.
-    // web_fetch can still run as an intermediate step before this.
-    tool_choice: { type: "tool", name: ANALYSIS_TOOL_NAME },
+    // Auto so the model can call web_fetch first, then submit_website_analysis.
+    // Forcing the analysis tool blocks web_fetch from running as a prior step.
+    tool_choice: { type: "auto" },
     messages: [
       {
         role: "user",
-        content: `נתח את האתר הבא והחזר ניתוח מובנה דרך הכלי ${ANALYSIS_TOOL_NAME}: ${url}`,
+        content:
+          `אנא בצע את שני הצעדים הבאים בסדר הזה:\n` +
+          `1. השתמש בכלי web_fetch כדי לטעון את התוכן של ${url}\n` +
+          `2. נתח את התוכן שטענת והחזר את הניתוח דרך הכלי ${ANALYSIS_TOOL_NAME}.\n\n` +
+          `חובה לבצע את שני הצעדים. אל תחזיר טקסט חופשי — התשובה הסופית חייבת להיות קריאה לכלי ${ANALYSIS_TOOL_NAME} עם השדות המלאים בעברית בהתבסס על התוכן שטענת בפועל.`,
       },
     ],
   });
+
+  // Surface what the model actually did in server logs for debugging.
+  console.log(
+    "[analyze-website] stop_reason:",
+    response.stop_reason,
+    "blocks:",
+    response.content.map((b) => b.type).join(", "),
+  );
 
   if (response.stop_reason === "max_tokens") {
     throw new Error(
