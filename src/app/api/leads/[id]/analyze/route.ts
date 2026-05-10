@@ -78,12 +78,17 @@ export async function POST(
     console.error("Analysis failed", err);
     if (err instanceof PageFetchError) {
       return NextResponse.json(
-        { error: "לא ניתן היה לטעון את האתר" },
+        {
+          error: `לא ניתן היה לטעון את האתר: ${err.message}`,
+          reason: err.message,
+        },
         { status: 502 },
       );
     }
     return NextResponse.json(
-      { error: "ניתוח האתר נכשל. נסו שוב." },
+      {
+        error: `ניתוח האתר נכשל: ${err instanceof Error ? err.message : "שגיאה לא ידועה"}`,
+      },
       { status: 500 },
     );
   }

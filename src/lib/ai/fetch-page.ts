@@ -31,9 +31,19 @@ export async function fetchPageContent(url: string): Promise<FetchedPage> {
     response = await fetch(url, {
       signal: controller.signal,
       headers: {
+        // Real Chrome UA — many sites reject non-browser fingerprints,
+        // especially when the request comes from a data-center IP.
         "User-Agent":
-          "Mozilla/5.0 (compatible; JackCRM/1.0; +https://jackcrm.app)",
-        Accept: "text/html,application/xhtml+xml",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "he,en-US;q=0.7,en;q=0.3",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
       },
       redirect: "follow",
     });
@@ -41,14 +51,16 @@ export async function fetchPageContent(url: string): Promise<FetchedPage> {
     clearTimeout(timeout);
     throw new PageFetchError(
       err instanceof Error && err.name === "AbortError"
-        ? "Timeout fetching the page"
-        : "Network error fetching the page",
+        ? "Timeout fetching the page (>10s)"
+        : `Network error: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
   clearTimeout(timeout);
 
   if (!response.ok) {
-    throw new PageFetchError(`HTTP ${response.status} fetching the page`);
+    throw new PageFetchError(
+      `HTTP ${response.status} ${response.statusText} fetching the page`,
+    );
   }
 
   const reader = response.body?.getReader();

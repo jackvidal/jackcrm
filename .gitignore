@@ -56,3 +56,5 @@ excalidraw.log
 .agents/
 .claude/
 skills-lock.json
+
+.vercel
