@@ -21,6 +21,8 @@ export function ThemeToggle() {
     const next = !isDark;
     setIsDark(next);
     document.documentElement.classList.toggle("dark", next);
+    // Cookie is what the server reads on next page load (no flash).
+    document.cookie = `theme=${next ? "dark" : "light"}; max-age=${60 * 60 * 24 * 365}; path=/; SameSite=Lax`;
     try {
       localStorage.setItem("theme", next ? "dark" : "light");
     } catch {
