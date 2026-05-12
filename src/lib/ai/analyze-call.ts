@@ -44,7 +44,7 @@ export async function analyzeCall(transcript: string): Promise<CallAnalysisResul
   // tool_choice CAN force the analysis tool directly (unlike website analysis).
   const response = await client.messages.create({
     model: DEFAULT_MODEL,
-    max_tokens: 8192, // Hebrew tokenizes hungrily; plenty of headroom
+    max_tokens: 16384, // Hebrew tokenizes hungrily; bumped for long transcripts
     system: [
       {
         type: "text",
@@ -62,6 +62,13 @@ export async function analyzeCall(transcript: string): Promise<CallAnalysisResul
     ],
   });
 
+  // Log so we can debug in Vercel function logs if needed
+  console.log("[analyze-call] stop_reason:", response.stop_reason);
+  console.log(
+    "[analyze-call] content blocks:",
+    response.content.map((b) => b.type).join(", "),
+  );
+
   if (response.stop_reason === "max_tokens") {
     throw new Error("הניתוח חרג ממגבלת האורך. נסו שוב או צמצמו את התמלול.");
   }
@@ -71,8 +78,17 @@ export async function analyzeCall(transcript: string): Promise<CallAnalysisResul
       block.type === "tool_use" && block.name === CALL_ANALYSIS_TOOL_NAME,
   );
   if (!toolUse) {
+    console.error(
+      "[analyze-call] No tool_use block. Full content:",
+      JSON.stringify(response.content),
+    );
     throw new Error("המודל לא החזיר ניתוח מובנה");
   }
+
+  console.log(
+    "[analyze-call] tool input keys:",
+    Object.keys(toolUse.input as object).join(", "),
+  );
 
   const input = toolUse.input as Partial<CallAnalysisResult>;
 
