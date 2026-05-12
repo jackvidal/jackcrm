@@ -36,6 +36,17 @@ enum TaskPriority {
   HIGH
 }
 
+enum CallDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum CallSentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
 model Profile {
   id                  String   @id @db.Uuid
   email               String   @unique
@@ -46,6 +57,7 @@ model Profile {
   leads     Lead[]
   leadNotes LeadNote[]
   tasks     Task[]
+  calls     Call[]
 
   @@map("profiles")
 }
@@ -69,6 +81,7 @@ model Lead {
   meetings  Meeting[]
   analyses  WebsiteAnalysis[]
   tasks     Task[]
+  calls     Call[]
 
   @@index([ownerId, status])
   @@index([ownerId, createdAt])
@@ -126,6 +139,39 @@ model Task {
   @@index([ownerId, status, dueDate])
   @@index([leadId])
   @@map("tasks")
+}
+
+model Call {
+  id              String        @id @default(uuid()) @db.Uuid
+  ownerId         String        @map("owner_id") @db.Uuid
+  owner           Profile       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  leadId          String        @map("lead_id") @db.Uuid
+  lead            Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction       CallDirection
+  occurredAt      DateTime      @map("occurred_at")
+  durationSeconds Int?          @map("duration_seconds")
+  notes           String?
+  transcript      String?
+  audioUrl        String?       @map("audio_url")
+
+  // AI analysis fields (populated in Session 3; nullable until then)
+  summary              String?
+  keyTopics            Json?          @map("key_topics")
+  sentiment            CallSentiment?
+  sentimentReason      String?        @map("sentiment_reason")
+  prospectCommitments  Json?          @map("prospect_commitments")
+  myCommitments        Json?          @map("my_commitments")
+  recommendedNextSteps Json?          @map("recommended_next_steps")
+  redFlags             Json?          @map("red_flags")
+  analyzedAt           DateTime?      @map("analyzed_at")
+  modelUsed            String?        @map("model_used")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerId, occurredAt])
+  @@index([leadId, occurredAt])
+  @@map("calls")
 }
 
 model WebsiteAnalysis {

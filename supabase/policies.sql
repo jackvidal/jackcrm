@@ -140,6 +140,25 @@ DROP POLICY IF EXISTS "tasks_delete_own" ON public.tasks;
 CREATE POLICY "tasks_delete_own" ON public.tasks
   FOR DELETE USING (owner_id = auth.uid());
 
+-- ─── calls ───────────────────────────────────────────────────────────────
+ALTER TABLE public.calls ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "calls_select_own" ON public.calls;
+CREATE POLICY "calls_select_own" ON public.calls
+  FOR SELECT USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "calls_insert_own" ON public.calls;
+CREATE POLICY "calls_insert_own" ON public.calls
+  FOR INSERT WITH CHECK (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "calls_update_own" ON public.calls;
+CREATE POLICY "calls_update_own" ON public.calls
+  FOR UPDATE USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "calls_delete_own" ON public.calls;
+CREATE POLICY "calls_delete_own" ON public.calls
+  FOR DELETE USING (owner_id = auth.uid());
+
 -- ─── webhook_events (service role only) ───────────────────────────────────
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
 -- No policies = no rows visible to the anon/authenticated roles. Service role bypasses RLS.

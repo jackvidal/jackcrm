@@ -26,6 +26,8 @@ import { CreateMeetingButton } from "@/components/meetings/meeting-form";
 import { MeetingList } from "@/components/meetings/meeting-list";
 import { CreateTaskButton } from "@/components/tasks/task-form";
 import { TaskList } from "@/components/tasks/task-list";
+import { LogCallButton } from "@/components/calls/call-form";
+import { CallList } from "@/components/calls/call-list";
 import { formatDateTime, formatRelative } from "@/lib/utils";
 import { t } from "@/i18n/he";
 
@@ -48,6 +50,9 @@ export default async function LeadDetailPage({
       analyses: { orderBy: { createdAt: "desc" }, take: 1 },
       tasks: {
         orderBy: [{ status: "asc" }, { dueDate: "asc" }],
+      },
+      calls: {
+        orderBy: { occurredAt: "desc" },
       },
     },
   });
@@ -167,6 +172,16 @@ export default async function LeadDetailPage({
             </CardHeader>
             <CardContent>
               <MeetingList meetings={lead.meetings} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle>{t.calls.title}</CardTitle>
+              <LogCallButton leadId={lead.id} />
+            </CardHeader>
+            <CardContent>
+              <CallList calls={lead.calls} />
             </CardContent>
           </Card>
         </div>
