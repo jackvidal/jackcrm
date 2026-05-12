@@ -4,7 +4,7 @@
  */
 export const t = {
   app: {
-    name: "JackCRM",
+    name: "Leadero",
     tagline: "מערכת CRM חכמה לעסקים מודרניים",
   },
   nav: {
@@ -29,7 +29,7 @@ export const t = {
     welcomeBack: "ברוכים השבים",
     createAccount: "צרו חשבון חדש",
     loginSubtitle: "התחברו כדי לנהל את הלידים שלכם",
-    signupSubtitle: "הצטרפו ל־JackCRM וקדמו את העסק שלכם",
+    signupSubtitle: "הצטרפו ל־Leadero וקדמו את העסק שלכם",
   },
   leads: {
     title: "לידים",

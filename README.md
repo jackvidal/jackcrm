@@ -1,4 +1,4 @@
-# JackCRM
+# Leadero
 
 A Hebrew-first CRM SaaS demonstrating a complete modern product: Next.js frontend + backend, Supabase auth + Postgres, Prisma ORM, Anthropic Claude for AI website analysis, and a Cal.com webhook for booking automation.
 
@@ -58,14 +58,14 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Meetings**: attached to a lead, with status auto-updating the lead
 - **AI Website Analysis**: paste a URL, Claude returns a structured Hebrew analysis (summary, issues, opportunities, recommended services, next steps) — saved to the lead
 - **Cal.com webhook** at `/api/webhooks/cal`: HMAC-verified, idempotent — creates/updates a lead and meeting from a booking
-- **Settings**: map your Cal.com organizer email to your JackCRM account
+- **Settings**: map your Cal.com organizer email to your Leadero account
 
 ## Cal.com webhook setup
 1. In Cal.com → `Settings → Developer → Webhooks`, add a new subscription.
 2. URL: `https://YOUR-DEPLOYED-DOMAIN/api/webhooks/cal`
 3. Subscribe to: `Booking Created`, `Booking Rescheduled`, `Booking Cancelled`, `Meeting Ended`
 4. Set a secret and copy it into `.env.local` as `CAL_WEBHOOK_SECRET`.
-5. In JackCRM Settings, enter the email that appears as the organizer of your Cal.com bookings.
+5. In Leadero Settings, enter the email that appears as the organizer of your Cal.com bookings.
 
 For local testing, use [ngrok](https://ngrok.com): `ngrok http 3000` and use the public URL above.
 

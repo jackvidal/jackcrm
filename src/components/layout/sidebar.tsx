@@ -25,7 +25,7 @@ export function Sidebar() {
     <aside className="hidden w-60 shrink-0 border-s border-border bg-card md:block">
       <div className="flex h-16 items-center gap-2 px-6 font-semibold">
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          J
+          L
         </span>
         {t.app.name}
       </div>

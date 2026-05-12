@@ -14,7 +14,7 @@ export default function AuthLayout({
           className="inline-flex items-center gap-2 font-semibold text-lg"
         >
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            J
+            L
           </span>
           {t.app.name}
         </Link>

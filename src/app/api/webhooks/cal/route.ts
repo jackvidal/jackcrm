@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     });
     if (!profile) {
       throw new Error(
-        `No JackCRM user mapped to organizer ${organizerEmail}. Set this on the Settings page.`,
+        `No Leadero user mapped to organizer ${organizerEmail}. Set this on the Settings page.`,
       );
     }
 
