@@ -76,23 +76,25 @@ export async function analyzeCall(transcript: string): Promise<CallAnalysisResul
 
   const input = toolUse.input as Partial<CallAnalysisResult>;
 
-  // Defensive: required scalars must be present
-  if (!input.summary || !input.sentiment || !input.sentimentReason) {
-    throw new Error("הניתוח לא הושלם — שדות חסרים. נסו שוב.");
-  }
-  if (!Array.isArray(input.keyTopics) || !Array.isArray(input.recommendedNextSteps)) {
-    throw new Error("הניתוח לא הושלם — שדות חסרים. נסו שוב.");
-  }
-
+  // Be lenient: save whatever Claude returned. Empty/missing fields render
+  // as empty sections in the UI. This handles short/sparse transcripts
+  // gracefully instead of failing the whole analysis.
   return {
-    summary: input.summary,
-    keyTopics: input.keyTopics,
-    sentiment: input.sentiment as CallSentimentValue,
-    sentimentReason: input.sentimentReason,
-    prospectCommitments: input.prospectCommitments ?? [],
-    myCommitments: input.myCommitments ?? [],
-    recommendedNextSteps: input.recommendedNextSteps,
-    redFlags: input.redFlags ?? [],
+    summary:
+      input.summary ?? "התמלול קצר מדי או לא ברור לניתוח מלא.",
+    keyTopics: Array.isArray(input.keyTopics) ? input.keyTopics : [],
+    sentiment: (input.sentiment ?? "NEUTRAL") as CallSentimentValue,
+    sentimentReason: input.sentimentReason ?? "",
+    prospectCommitments: Array.isArray(input.prospectCommitments)
+      ? input.prospectCommitments
+      : [],
+    myCommitments: Array.isArray(input.myCommitments)
+      ? input.myCommitments
+      : [],
+    recommendedNextSteps: Array.isArray(input.recommendedNextSteps)
+      ? input.recommendedNextSteps
+      : [],
+    redFlags: Array.isArray(input.redFlags) ? input.redFlags : [],
     modelUsed: DEFAULT_MODEL,
     raw: response,
   };
