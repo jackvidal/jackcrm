@@ -23,6 +23,19 @@ enum MeetingStatus {
   NO_SHOW
 }
 
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model Profile {
   id                  String   @id @db.Uuid
   email               String   @unique
@@ -32,6 +45,7 @@ model Profile {
 
   leads     Lead[]
   leadNotes LeadNote[]
+  tasks     Task[]
 
   @@map("profiles")
 }
@@ -54,6 +68,7 @@ model Lead {
   leadNotes LeadNote[]
   meetings  Meeting[]
   analyses  WebsiteAnalysis[]
+  tasks     Task[]
 
   @@index([ownerId, status])
   @@index([ownerId, createdAt])
@@ -91,6 +106,26 @@ model Meeting {
   @@index([ownerId, scheduledAt])
   @@index([leadId, scheduledAt])
   @@map("meetings")
+}
+
+model Task {
+  id          String       @id @default(uuid()) @db.Uuid
+  ownerId     String       @map("owner_id") @db.Uuid
+  owner       Profile      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  leadId      String       @map("lead_id") @db.Uuid
+  lead        Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  dueDate     DateTime?    @map("due_date")
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  completedAt DateTime?    @map("completed_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@index([ownerId, status, dueDate])
+  @@index([leadId])
+  @@map("tasks")
 }
 
 model WebsiteAnalysis {

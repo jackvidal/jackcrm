@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Users,
   CalendarDays,
+  CheckSquare,
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ const items = [
   { href: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
   { href: "/leads", label: t.nav.leads, icon: Users },
   { href: "/meetings", label: t.nav.meetings, icon: CalendarDays },
+  { href: "/tasks", label: t.nav.tasks, icon: CheckSquare },
   { href: "/settings", label: t.nav.settings, icon: Settings },
 ];
 

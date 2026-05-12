@@ -1,8 +1,10 @@
 import Link from "next/link";
 import {
+  AlertCircle,
   ArrowUpRight,
   CalendarCheck,
   CheckCircle2,
+  CheckSquare,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { MeetingStatusBadge } from "@/components/meetings/meeting-status-badge";
+import { TaskList } from "@/components/tasks/task-list";
 import { formatDateTime, formatRelative } from "@/lib/utils";
 import { t } from "@/i18n/he";
 
@@ -23,6 +26,8 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const now = new Date();
   const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfTomorrow = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
 
   const [
     totalLeads,
@@ -31,6 +36,8 @@ export default async function DashboardPage() {
     meetingsThisWeek,
     recentLeads,
     upcomingMeetings,
+    overdueCount,
+    todayTasks,
   ] = await Promise.all([
     prisma.lead.count({ where: { ownerId: user.id } }),
     prisma.lead.count({ where: { ownerId: user.id, status: "NEW" } }),
@@ -57,6 +64,28 @@ export default async function DashboardPage() {
       take: 5,
       include: { lead: { select: { id: true, fullName: true } } },
     }),
+    prisma.task.count({
+      where: {
+        ownerId: user.id,
+        dueDate: { lt: startOfToday },
+        status: { notIn: ["DONE", "CANCELED"] },
+      },
+    }),
+    prisma.task.findMany({
+      where: {
+        ownerId: user.id,
+        OR: [
+          { dueDate: { gte: startOfToday, lt: startOfTomorrow } },
+          {
+            dueDate: { lt: startOfToday },
+            status: { notIn: ["DONE", "CANCELED"] },
+          },
+        ],
+      },
+      orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }],
+      take: 6,
+      include: { lead: { select: { id: true, fullName: true } } },
+    }),
   ]);
 
   return (
@@ -65,7 +94,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold">{t.dashboard.title}</h1>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Stat
           icon={<Users className="h-5 w-5" />}
           label={t.dashboard.metrics.totalLeads}
@@ -83,6 +112,12 @@ export default async function DashboardPage() {
           label={t.dashboard.metrics.meetingsThisWeek}
           value={meetingsThisWeek}
           tone="default"
+        />
+        <Stat
+          icon={<AlertCircle className="h-5 w-5" />}
+          label={t.dashboard.overdueTasks}
+          value={overdueCount}
+          tone={overdueCount > 0 ? "destructive" : "default"}
         />
         <Stat
           icon={<CheckCircle2 className="h-5 w-5" />}
@@ -173,6 +208,25 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="flex items-center gap-2">
+            <CheckSquare className="h-5 w-5" />
+            {t.dashboard.todayTasks}
+          </CardTitle>
+          <Link
+            href="/tasks"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            {t.dashboard.viewAll}
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <TaskList tasks={todayTasks} showLead emptyText={t.tasks.none} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -186,13 +240,14 @@ function Stat({
   icon: React.ReactNode;
   label: string;
   value: number;
-  tone: "primary" | "success" | "warning" | "default";
+  tone: "primary" | "success" | "warning" | "default" | "destructive";
 }) {
   const toneClass = {
     primary: "bg-primary/10 text-primary",
     success: "bg-success/10 text-success",
     warning: "bg-warning/10 text-warning",
     default: "bg-secondary text-foreground",
+    destructive: "bg-destructive/10 text-destructive",
   }[tone];
 
   return (

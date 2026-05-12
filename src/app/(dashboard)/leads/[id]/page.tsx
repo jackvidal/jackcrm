@@ -24,6 +24,8 @@ import { AddNoteForm } from "@/components/leads/add-note-form";
 import { AnalysisCard } from "@/components/analysis/analysis-card";
 import { CreateMeetingButton } from "@/components/meetings/meeting-form";
 import { MeetingList } from "@/components/meetings/meeting-list";
+import { CreateTaskButton } from "@/components/tasks/task-form";
+import { TaskList } from "@/components/tasks/task-list";
 import { formatDateTime, formatRelative } from "@/lib/utils";
 import { t } from "@/i18n/he";
 
@@ -44,6 +46,9 @@ export default async function LeadDetailPage({
       },
       meetings: { orderBy: { scheduledAt: "desc" } },
       analyses: { orderBy: { createdAt: "desc" }, take: 1 },
+      tasks: {
+        orderBy: [{ status: "asc" }, { dueDate: "asc" }],
+      },
     },
   });
   if (!lead) notFound();
@@ -144,6 +149,16 @@ export default async function LeadDetailPage({
             websiteUrl={lead.websiteUrl}
             analysis={latestAnalysis}
           />
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle>{t.tasks.title}</CardTitle>
+              <CreateTaskButton leadId={lead.id} />
+            </CardHeader>
+            <CardContent>
+              <TaskList tasks={lead.tasks} />
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
