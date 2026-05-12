@@ -5,6 +5,7 @@ import { Clock, FileText, Pencil, Trash2 } from "lucide-react";
 import type { Call } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { CallDirectionBadge } from "./call-direction-badge";
+import { CallAnalysisCard } from "./call-analysis-card";
 import { EditCallDialog } from "./call-form";
 import { deleteCallAction } from "@/app/(dashboard)/calls/actions";
 import { formatDateTime } from "@/lib/utils";
@@ -81,6 +82,8 @@ export function CallList({ calls }: { calls: Call[] }) {
                 {call.notes}
               </p>
             )}
+
+            <CallAnalysisCard call={call} />
           </li>
         ))}
       </ul>
