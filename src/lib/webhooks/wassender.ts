@@ -2,11 +2,14 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 /**
  * Verify a Wassender webhook signature.
- * Wassender sends `X-Webhook-Signature` (or similar) as an HMAC-SHA256 of the raw
- * request body using the configured webhook secret.
  *
- * If no secret is configured we accept the request (useful for local testing)
- * but log a warning. In production, always set WASSENDER_WEBHOOK_SECRET.
+ * Wassender's implementation is simpler than typical HMAC: the `X-Webhook-Signature`
+ * header contains the raw shared secret itself, not an HMAC of the body.
+ * (See the Webhook Simulator's verification example — it does a direct equality
+ * check between the header value and the configured secret.)
+ *
+ * For forward-compatibility we also accept a real HMAC-SHA256 of the body if the
+ * provider ever upgrades. Either match counts as valid.
  */
 export function verifyWassenderSignature(
   rawBody: string,
@@ -14,12 +17,22 @@ export function verifyWassenderSignature(
   secret: string,
 ): boolean {
   if (!signature) return false;
+  const clean = signature.replace(/^sha256=/, "").trim();
+
+  // Path 1: raw shared secret (current Wassender behavior)
+  if (constantTimeEquals(clean, secret)) return true;
+
+  // Path 2: HMAC-SHA256 of the body (future-proof)
   const computed = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const a = Buffer.from(computed, "utf-8");
-  const b = Buffer.from(signature.replace(/^sha256=/, "").trim(), "utf-8");
-  if (a.length !== b.length) return false;
+  return constantTimeEquals(clean, computed);
+}
+
+function constantTimeEquals(a: string, b: string): boolean {
+  const ba = Buffer.from(a, "utf-8");
+  const bb = Buffer.from(b, "utf-8");
+  if (ba.length !== bb.length) return false;
   try {
-    return timingSafeEqual(a, b);
+    return timingSafeEqual(ba, bb);
   } catch {
     return false;
   }
