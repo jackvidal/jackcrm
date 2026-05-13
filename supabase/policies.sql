@@ -159,6 +159,25 @@ DROP POLICY IF EXISTS "calls_delete_own" ON public.calls;
 CREATE POLICY "calls_delete_own" ON public.calls
   FOR DELETE USING (owner_id = auth.uid());
 
+-- ─── whatsapp_messages ───────────────────────────────────────────────────
+ALTER TABLE public.whatsapp_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "whatsapp_messages_select_own" ON public.whatsapp_messages;
+CREATE POLICY "whatsapp_messages_select_own" ON public.whatsapp_messages
+  FOR SELECT USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "whatsapp_messages_insert_own" ON public.whatsapp_messages;
+CREATE POLICY "whatsapp_messages_insert_own" ON public.whatsapp_messages
+  FOR INSERT WITH CHECK (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "whatsapp_messages_update_own" ON public.whatsapp_messages;
+CREATE POLICY "whatsapp_messages_update_own" ON public.whatsapp_messages
+  FOR UPDATE USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "whatsapp_messages_delete_own" ON public.whatsapp_messages;
+CREATE POLICY "whatsapp_messages_delete_own" ON public.whatsapp_messages
+  FOR DELETE USING (owner_id = auth.uid());
+
 -- ─── webhook_events (service role only) ───────────────────────────────────
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
 -- No policies = no rows visible to the anon/authenticated roles. Service role bypasses RLS.

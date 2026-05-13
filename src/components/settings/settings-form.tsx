@@ -23,10 +23,14 @@ const initial: FormState = {};
 export function SettingsForm({
   defaultFullName,
   defaultCalOrganizerEmail,
+  defaultWhatsappNumber,
+  defaultWassenderToken,
   email,
 }: {
   defaultFullName: string;
   defaultCalOrganizerEmail: string;
+  defaultWhatsappNumber: string;
+  defaultWassenderToken: string;
   email: string;
 }) {
   const [state, formAction, pending] = useActionState(
@@ -87,6 +91,46 @@ export function SettingsForm({
               defaultValue={defaultCalOrganizerEmail}
               placeholder="organizer@example.com"
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>WhatsApp (Wassender)</CardTitle>
+          <CardDescription>{t.settings.whatsappNumberHelp}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="whatsappNumber">
+              {t.settings.whatsappNumber}
+            </Label>
+            <Input
+              id="whatsappNumber"
+              name="whatsappNumber"
+              dir="ltr"
+              className="text-start"
+              defaultValue={defaultWhatsappNumber}
+              placeholder="972501234567"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="wassenderToken">
+              {t.settings.wassenderToken}
+            </Label>
+            <Input
+              id="wassenderToken"
+              name="wassenderToken"
+              type="password"
+              dir="ltr"
+              className="text-start"
+              defaultValue={defaultWassenderToken}
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+            />
+            <p className="text-xs text-muted-foreground">
+              {t.settings.wassenderTokenHelp}
+            </p>
           </div>
         </CardContent>
       </Card>

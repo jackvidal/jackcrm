@@ -10,6 +10,8 @@ export default async function SettingsPage() {
       <SettingsForm
         defaultFullName={user.fullName ?? ""}
         defaultCalOrganizerEmail={user.calOrganizerEmail ?? ""}
+        defaultWhatsappNumber={user.whatsappNumber ?? ""}
+        defaultWassenderToken={user.wassenderToken ?? ""}
         email={user.email}
       />
     </div>

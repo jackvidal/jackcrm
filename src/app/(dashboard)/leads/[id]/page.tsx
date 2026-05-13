@@ -28,6 +28,7 @@ import { CreateTaskButton } from "@/components/tasks/task-form";
 import { TaskList } from "@/components/tasks/task-list";
 import { LogCallButton } from "@/components/calls/call-form";
 import { CallList } from "@/components/calls/call-list";
+import { WhatsappPanel } from "@/components/whatsapp/whatsapp-panel";
 import { formatDateTime, formatRelative } from "@/lib/utils";
 import { t } from "@/i18n/he";
 
@@ -54,11 +55,17 @@ export default async function LeadDetailPage({
       calls: {
         orderBy: { occurredAt: "desc" },
       },
+      whatsappMessages: {
+        orderBy: { sentAt: "asc" },
+      },
     },
   });
   if (!lead) notFound();
 
   const latestAnalysis = lead.analyses[0] ?? null;
+  const hasWhatsappIntegration = Boolean(
+    user.whatsappNumber && user.wassenderToken,
+  );
 
   return (
     <div className="space-y-6">
@@ -184,6 +191,13 @@ export default async function LeadDetailPage({
               <CallList calls={lead.calls} />
             </CardContent>
           </Card>
+
+          <WhatsappPanel
+            leadId={lead.id}
+            leadPhone={lead.phone}
+            messages={lead.whatsappMessages}
+            hasIntegration={hasWhatsappIntegration}
+          />
         </div>
 
         <div className="space-y-6">

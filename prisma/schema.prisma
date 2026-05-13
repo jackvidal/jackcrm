@@ -47,17 +47,42 @@ enum CallSentiment {
   NEGATIVE
 }
 
+enum WhatsappDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WhatsappMessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
+enum WhatsappStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
 model Profile {
   id                  String   @id @db.Uuid
   email               String   @unique
   fullName            String?  @map("full_name")
   calOrganizerEmail   String?  @map("cal_organizer_email")
+  whatsappNumber      String?  @map("whatsapp_number")
+  wassenderToken      String?  @map("wassender_token")
   createdAt           DateTime @default(now()) @map("created_at")
 
-  leads     Lead[]
-  leadNotes LeadNote[]
-  tasks     Task[]
-  calls     Call[]
+  leads             Lead[]
+  leadNotes         LeadNote[]
+  tasks             Task[]
+  calls             Call[]
+  whatsappMessages  WhatsappMessage[]
 
   @@map("profiles")
 }
@@ -77,15 +102,17 @@ model Lead {
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
 
-  leadNotes LeadNote[]
-  meetings  Meeting[]
-  analyses  WebsiteAnalysis[]
-  tasks     Task[]
-  calls     Call[]
+  leadNotes        LeadNote[]
+  meetings         Meeting[]
+  analyses         WebsiteAnalysis[]
+  tasks            Task[]
+  calls            Call[]
+  whatsappMessages WhatsappMessage[]
 
   @@index([ownerId, status])
   @@index([ownerId, createdAt])
   @@index([ownerId, email])
+  @@index([ownerId, phone])
   @@map("leads")
 }
 
@@ -190,6 +217,30 @@ model WebsiteAnalysis {
 
   @@index([leadId, createdAt])
   @@map("website_analyses")
+}
+
+model WhatsappMessage {
+  id              String              @id @default(uuid()) @db.Uuid
+  ownerId         String              @map("owner_id") @db.Uuid
+  owner           Profile             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  leadId          String              @map("lead_id") @db.Uuid
+  lead            Lead                @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction       WhatsappDirection
+  messageType     WhatsappMessageType @default(TEXT) @map("message_type")
+  body            String?
+  mediaUrl        String?             @map("media_url")
+  fromNumber      String              @map("from_number")
+  toNumber        String              @map("to_number")
+  status          WhatsappStatus      @default(SENT)
+  externalId      String?             @unique @map("external_id")
+  sentAt          DateTime            @map("sent_at")
+  errorMessage    String?             @map("error_message")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  @@index([ownerId, sentAt])
+  @@index([leadId, sentAt])
+  @@map("whatsapp_messages")
 }
 
 model WebhookEvent {
