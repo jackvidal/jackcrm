@@ -49,7 +49,7 @@ export function CreateMeetingButton({ leadId }: { leadId: string }) {
       setOpen(false);
       formRef.current?.reset();
     }
-  }, [state.ok]);
+  }, [state]);
 
   const defaultDate = toDateTimeLocalValue(
     new Date(Date.now() + 60 * 60 * 1000),
@@ -153,7 +153,7 @@ export function EditMeetingDialog({
 
   useEffect(() => {
     if (state.ok) onOpenChange(false);
-  }, [state.ok, onOpenChange]);
+  }, [state, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

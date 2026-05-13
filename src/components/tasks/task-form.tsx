@@ -62,7 +62,7 @@ export function CreateTaskButton({
       setOpen(false);
       formRef.current?.reset();
     }
-  }, [state.ok]);
+  }, [state]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -154,7 +154,7 @@ export function EditTaskDialog({
 
   useEffect(() => {
     if (state.ok) onOpenChange(false);
-  }, [state.ok, onOpenChange]);
+  }, [state, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

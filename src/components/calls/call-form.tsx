@@ -52,7 +52,7 @@ export function LogCallButton({
       setOpen(false);
       formRef.current?.reset();
     }
-  }, [state.ok]);
+  }, [state]);
 
   // Default to current time, rounded down to nearest 5 minutes
   const defaultOccurredAt = (() => {
@@ -171,7 +171,7 @@ export function EditCallDialog({
 
   useEffect(() => {
     if (state.ok) onOpenChange(false);
-  }, [state.ok, onOpenChange]);
+  }, [state, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
