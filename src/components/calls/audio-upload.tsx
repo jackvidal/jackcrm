@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CloudUpload, Loader2, Mic } from "lucide-react";
+import { CloudUpload, Loader2, Mic, Sparkles } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ interface Props {
   callId: string;
 }
 
-type Stage = "idle" | "uploading" | "transcribing";
+type Stage = "idle" | "uploading" | "transcribing" | "analyzing";
 
 // Whisper-supported audio + video containers (Whisper extracts the audio track from videos)
 const ACCEPTED_EXTS = ["mp3", "wav", "m4a", "mp4", "mpeg", "mpga", "webm", "ogg", "flac"];
@@ -65,7 +65,7 @@ export function AudioUpload({ callId }: Props) {
         return;
       }
 
-      // Each user has their own folder. RLS will enforce read access.
+      // 1. Upload to Supabase Storage (own folder enforced by RLS)
       const path = `${user.id}/${callId}-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("call-audio")
@@ -78,23 +78,42 @@ export function AudioUpload({ callId }: Props) {
         throw new Error(uploadError.message);
       }
 
-      // Tell the server to fetch from storage and transcribe
+      // 2. Transcribe with Whisper
       setStage("transcribing");
-      const res = await fetch(`/api/calls/${callId}/transcribe`, {
+      const transcribeRes = await fetch(`/api/calls/${callId}/transcribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storagePath: path }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      if (!transcribeRes.ok) {
+        const data = await transcribeRes.json().catch(() => ({}));
         throw new Error(data.error ?? t.calls.audioUpload.error);
       }
 
-      toast({
-        title: t.calls.audioUpload.success,
-        variant: "success",
+      // 3. Auto-trigger AI analysis (Claude reads the fresh transcript)
+      setStage("analyzing");
+      const analyzeRes = await fetch(`/api/calls/${callId}/analyze`, {
+        method: "POST",
       });
+
+      if (analyzeRes.ok) {
+        // Both steps succeeded
+        toast({
+          title: t.calls.audioUpload.allDone,
+          variant: "success",
+        });
+      } else {
+        // Transcript saved, but analysis failed. Soft-fail — user can retry analysis manually.
+        const data = await analyzeRes.json().catch(() => ({}));
+        toast({
+          title: t.calls.audioUpload.transcriptOnlySuccess,
+          description:
+            data.error ??
+            "התמלול נשמר אבל ניתוח ה־AI נכשל — תוכלו ללחוץ 'הרץ ניתוח AI' ידנית.",
+        });
+      }
+
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : t.calls.audioUpload.error;
@@ -166,6 +185,7 @@ export function AudioUpload({ callId }: Props) {
           <>
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <p className="text-sm font-medium">{t.calls.audioUpload.uploading}</p>
+            <ProgressDots active={1} />
           </>
         )}
 
@@ -178,6 +198,20 @@ export function AudioUpload({ callId }: Props) {
             <p className="text-xs text-muted-foreground">
               עד דקה תלוי באורך ההקלטה
             </p>
+            <ProgressDots active={2} />
+          </>
+        )}
+
+        {stage === "analyzing" && (
+          <>
+            <Sparkles className="h-6 w-6 animate-pulse text-primary" />
+            <p className="text-sm font-medium">
+              {t.calls.audioUpload.analyzing}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              עוד כ־15 שניות
+            </p>
+            <ProgressDots active={3} />
           </>
         )}
       </label>
@@ -185,6 +219,22 @@ export function AudioUpload({ callId }: Props) {
       {error && (
         <p className="mt-2 text-xs text-destructive">{error}</p>
       )}
+    </div>
+  );
+}
+
+function ProgressDots({ active }: { active: 1 | 2 | 3 }) {
+  return (
+    <div className="mt-1 flex items-center gap-1.5">
+      {[1, 2, 3].map((step) => (
+        <span
+          key={step}
+          className={cn(
+            "h-1.5 w-6 rounded-full transition-colors",
+            step <= active ? "bg-primary" : "bg-muted-foreground/20",
+          )}
+        />
+      ))}
     </div>
   );
 }
