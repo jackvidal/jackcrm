@@ -197,10 +197,10 @@ export const t = {
       transcribing: "מתמלל...",
       success: "התמלול נשמר בהצלחה",
       error: "התמלול נכשל. אנא נסו שוב.",
-      dragHere: "גרור לכאן קובץ אודיו, או לחץ לבחירה",
-      supportedFormats: "MP3, WAV, M4A · עד 25MB",
+      dragHere: "גרור לכאן קובץ אודיו או וידאו, או לחץ לבחירה",
+      supportedFormats: "MP3, WAV, M4A, MP4, WebM · עד 25MB",
       tooBig: "הקובץ גדול מ־25MB. אנא דחסו או חתכו את ההקלטה.",
-      invalidFormat: "פורמט לא נתמך. השתמשו ב־MP3, WAV או M4A.",
+      invalidFormat: "פורמט לא נתמך. השתמשו ב־MP3, WAV, M4A, MP4 או WebM.",
     },
     aiAnalysis: {
       title: "ניתוח השיחה",

@@ -71,9 +71,13 @@ function detectMimeType(filename: string): string {
     mp3: "audio/mpeg",
     wav: "audio/wav",
     m4a: "audio/m4a",
-    mp4: "audio/mp4",
-    webm: "audio/webm",
+    // Whisper accepts MP4/WebM video — it extracts the audio track automatically.
+    mp4: "video/mp4",
+    mpeg: "video/mpeg",
+    mpga: "audio/mpeg",
+    webm: "video/webm",
     ogg: "audio/ogg",
+    flac: "audio/flac",
   };
   return map[ext] ?? "audio/mpeg";
 }

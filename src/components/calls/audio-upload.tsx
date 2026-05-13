@@ -14,7 +14,22 @@ interface Props {
 
 type Stage = "idle" | "uploading" | "transcribing";
 
-const ACCEPTED_EXTS = ["mp3", "wav", "m4a", "mp4", "webm", "ogg"];
+// Whisper-supported audio + video containers (Whisper extracts the audio track from videos)
+const ACCEPTED_EXTS = ["mp3", "wav", "m4a", "mp4", "mpeg", "mpga", "webm", "ogg", "flac"];
+const ACCEPT_ATTR = [
+  "audio/*",
+  "video/mp4",
+  "video/webm",
+  ".mp3",
+  ".wav",
+  ".m4a",
+  ".mp4",
+  ".mpeg",
+  ".mpga",
+  ".webm",
+  ".ogg",
+  ".flac",
+].join(",");
 const MAX_BYTES = 25 * 1024 * 1024;
 
 export function AudioUpload({ callId }: Props) {
@@ -124,7 +139,7 @@ export function AudioUpload({ callId }: Props) {
         <input
           ref={inputRef}
           type="file"
-          accept="audio/mpeg,audio/mp3,audio/wav,audio/m4a,audio/mp4,audio/webm,audio/ogg,.mp3,.wav,.m4a"
+          accept={ACCEPT_ATTR}
           className="hidden"
           disabled={busy}
           onChange={(e) => {
