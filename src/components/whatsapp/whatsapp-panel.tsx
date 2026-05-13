@@ -1,8 +1,16 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { WhatsappMessage } from "@prisma/client";
-import { Check, CheckCheck, Clock, Send, TriangleAlert } from "lucide-react";
+import {
+  Check,
+  CheckCheck,
+  Clock,
+  Loader2,
+  Send,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -178,10 +186,53 @@ function renderComposer({
     );
   }
 
+  return <Composer leadId={leadId} leadPhone={leadPhone} formRef={formRef} formAction={formAction} pending={pending} />;
+}
+
+function Composer({
+  leadId,
+  leadPhone,
+  formRef,
+  formAction,
+  pending,
+}: {
+  leadId: string;
+  leadPhone: string;
+  formRef: React.RefObject<HTMLFormElement | null>;
+  formAction: (formData: FormData) => void;
+  pending: boolean;
+}) {
+  const [drafting, setDrafting] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleDraft = async () => {
+    setDraftError(null);
+    setDrafting(true);
+    try {
+      const res = await fetch("/api/whatsapp/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.whatsapp.aiDraftError);
+      if (textareaRef.current) {
+        textareaRef.current.value = data.text;
+        textareaRef.current.focus();
+      }
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : t.whatsapp.aiDraftError);
+    } finally {
+      setDrafting(false);
+    }
+  };
+
   return (
     <form ref={formRef} action={formAction} className="space-y-2">
       <input type="hidden" name="leadId" value={leadId} />
       <Textarea
+        ref={textareaRef}
         name="body"
         rows={2}
         required
@@ -189,14 +240,33 @@ function renderComposer({
         placeholder={t.whatsapp.composePlaceholder}
         className="resize-none"
       />
-      <div className="flex items-center justify-between gap-2">
+      {draftError && (
+        <p className="text-xs text-destructive">{draftError}</p>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground" dir="ltr">
           <bdi>{leadPhone}</bdi>
         </p>
-        <Button type="submit" size="sm" disabled={pending}>
-          <Send className="h-4 w-4" />
-          {pending ? t.whatsapp.sending : t.whatsapp.send}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={drafting || pending}
+            onClick={handleDraft}
+          >
+            {drafting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {drafting ? t.whatsapp.aiDrafting : t.whatsapp.aiDraft}
+          </Button>
+          <Button type="submit" size="sm" disabled={pending}>
+            <Send className="h-4 w-4" />
+            {pending ? t.whatsapp.sending : t.whatsapp.send}
+          </Button>
+        </div>
       </div>
     </form>
   );
