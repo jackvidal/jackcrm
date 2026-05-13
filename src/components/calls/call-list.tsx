@@ -6,6 +6,7 @@ import type { Call } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { CallDirectionBadge } from "./call-direction-badge";
 import { CallAnalysisCard } from "./call-analysis-card";
+import { AudioUpload } from "./audio-upload";
 import { EditCallDialog } from "./call-form";
 import { deleteCallAction } from "@/app/(dashboard)/calls/actions";
 import { formatDateTime } from "@/lib/utils";
@@ -83,7 +84,13 @@ export function CallList({ calls }: { calls: Call[] }) {
               </p>
             )}
 
-            <CallAnalysisCard call={call} />
+            {/* If there's no transcript yet, offer audio upload.
+                Once transcript exists, show the AI analysis card. */}
+            {!call.transcript || call.transcript.trim().length === 0 ? (
+              <AudioUpload callId={call.id} />
+            ) : (
+              <CallAnalysisCard call={call} />
+            )}
           </li>
         ))}
       </ul>

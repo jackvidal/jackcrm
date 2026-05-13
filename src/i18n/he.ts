@@ -190,6 +190,18 @@ export const t = {
     minutesShort: "דק'",
     hasTranscript: "יש תמלול",
     noTranscript: "אין תמלול",
+    audioUpload: {
+      title: "תמלול אוטומטי מאודיו",
+      cta: "העלה קובץ הקלטה",
+      uploading: "מעלה...",
+      transcribing: "מתמלל...",
+      success: "התמלול נשמר בהצלחה",
+      error: "התמלול נכשל. אנא נסו שוב.",
+      dragHere: "גרור לכאן קובץ אודיו, או לחץ לבחירה",
+      supportedFormats: "MP3, WAV, M4A · עד 25MB",
+      tooBig: "הקובץ גדול מ־25MB. אנא דחסו או חתכו את ההקלטה.",
+      invalidFormat: "פורמט לא נתמך. השתמשו ב־MP3, WAV או M4A.",
+    },
     aiAnalysis: {
       title: "ניתוח השיחה",
       runButton: "הרץ ניתוח AI",
