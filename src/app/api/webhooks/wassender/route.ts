@@ -40,7 +40,17 @@ export async function POST(req: Request) {
 
   // If a secret is configured, enforce signature. Otherwise allow (dev/local).
   if (secret) {
-    if (!verifyWassenderSignature(rawBody, signature, secret)) {
+    const valid = verifyWassenderSignature(rawBody, signature, secret);
+    if (!valid) {
+      console.error("[wassender-webhook] signature mismatch", {
+        hasSignature: Boolean(signature),
+        sigLen: signature?.length ?? 0,
+        sigPrefix: signature?.slice(0, 8) ?? null,
+        secretLen: secret.length,
+        secretPrefix: secret.slice(0, 8),
+        secretsMatch: signature === secret,
+        secretsMatchTrimmed: signature?.trim() === secret.trim(),
+      });
       return NextResponse.json(
         { error: "Invalid signature" },
         { status: 401 },
