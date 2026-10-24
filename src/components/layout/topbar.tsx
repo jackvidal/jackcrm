@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { logoutAction } from "@/app/(auth)/actions";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { t } from "@/i18n/he";
 
 export function Topbar({
@@ -21,6 +21,8 @@ export function Topbar({
   fullName: string | null;
   email: string;
 }) {
+  const { signOut } = useAuthActions();
+  async function logoutAction() { await signOut(); window.location.assign("/login"); }
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-sm">
       <h1 className="text-base font-medium text-muted-foreground">

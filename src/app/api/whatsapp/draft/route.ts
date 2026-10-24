@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { draftWhatsappReply } from "@/lib/ai/draft-whatsapp-reply";
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id: parsed.data.leadId, ownerId: user.id },
     select: { id: true, fullName: true },
   });
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Lead not found" }, { status: 404 });
   }
 
-  const thread = await prisma.whatsappMessage.findMany({
+  const thread = await db.whatsappMessage.findMany({
     where: { leadId: lead.id, ownerId: user.id },
     orderBy: { sentAt: "asc" },
     select: { direction: true, body: true, sentAt: true },

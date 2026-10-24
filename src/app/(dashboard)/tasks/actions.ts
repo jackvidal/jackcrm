@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { taskCreateSchema, taskUpdateSchema } from "@/schemas/task";
 
@@ -29,13 +29,13 @@ export async function createTaskAction(
   }
 
   // Verify the lead belongs to the user
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id: parsed.data.leadId, ownerId: user.id },
     select: { id: true },
   });
   if (!lead) return { error: "הליד לא נמצא" };
 
-  await prisma.task.create({
+  await db.task.create({
     data: {
       leadId: parsed.data.leadId,
       ownerId: user.id,
@@ -64,7 +64,7 @@ export async function updateTaskAction(
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
   }
 
-  const existing = await prisma.task.findFirst({
+  const existing = await db.task.findFirst({
     where: { id: taskId, ownerId: user.id },
     select: { leadId: true, status: true },
   });
@@ -78,7 +78,7 @@ export async function updateTaskAction(
         ? null
         : undefined;
 
-  await prisma.task.update({
+  await db.task.update({
     where: { id: taskId },
     data: {
       ...(parsed.data.title !== undefined && { title: parsed.data.title }),
@@ -104,14 +104,14 @@ export async function updateTaskAction(
 
 export async function toggleTaskDoneAction(taskId: string) {
   const user = await requireUser();
-  const task = await prisma.task.findFirst({
+  const task = await db.task.findFirst({
     where: { id: taskId, ownerId: user.id },
     select: { leadId: true, status: true },
   });
   if (!task) return;
 
   const isDone = task.status === "DONE";
-  await prisma.task.update({
+  await db.task.update({
     where: { id: taskId },
     data: {
       status: isDone ? "PENDING" : "DONE",
@@ -126,13 +126,13 @@ export async function toggleTaskDoneAction(taskId: string) {
 
 export async function deleteTaskAction(taskId: string) {
   const user = await requireUser();
-  const task = await prisma.task.findFirst({
+  const task = await db.task.findFirst({
     where: { id: taskId, ownerId: user.id },
     select: { leadId: true },
   });
   if (!task) return;
 
-  await prisma.task.delete({ where: { id: taskId } });
+  await db.task.delete({ where: { id: taskId } });
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");

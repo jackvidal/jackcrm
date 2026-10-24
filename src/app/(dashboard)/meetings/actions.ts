@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import {
   meetingCreateSchema,
@@ -35,31 +35,22 @@ export async function createMeetingAction(
   }
 
   // Confirm the lead belongs to the user
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id: parsed.data.leadId, ownerId: user.id },
     select: { id: true, status: true },
   });
   if (!lead) return { error: "הליד לא נמצא" };
 
-  await prisma.$transaction(async (tx) => {
-    await tx.meeting.create({
-      data: {
-        leadId: parsed.data.leadId,
-        ownerId: user.id,
-        scheduledAt: new Date(parsed.data.scheduledAt),
-        durationMinutes: parsed.data.durationMinutes,
-        status: parsed.data.status,
-        notes: parsed.data.notes,
-        meetingUrl: parsed.data.meetingUrl,
-      },
-    });
-    // Auto-advance lead status when a future meeting is created
-    if (lead.status === "NEW" && parsed.data.status === "SCHEDULED") {
-      await tx.lead.update({
-        where: { id: lead.id },
-        data: { status: "MEETING_SCHEDULED" },
-      });
-    }
+  await db.meeting.create({
+    data: {
+      leadId: parsed.data.leadId,
+      ownerId: user.id,
+      scheduledAt: new Date(parsed.data.scheduledAt),
+      durationMinutes: parsed.data.durationMinutes,
+      status: parsed.data.status,
+      notes: parsed.data.notes,
+      meetingUrl: parsed.data.meetingUrl,
+    },
   });
 
   revalidatePath("/meetings");
@@ -78,40 +69,21 @@ export async function updateMeetingAction(
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
   }
 
-  const existing = await prisma.meeting.findFirst({
+  const existing = await db.meeting.findFirst({
     where: { id: meetingId, ownerId: user.id },
     select: { leadId: true },
   });
   if (!existing) return { error: "הפגישה לא נמצאה" };
 
-  await prisma.$transaction(async (tx) => {
-    await tx.meeting.update({
-      where: { id: meetingId },
-      data: {
-        ...(parsed.data.scheduledAt && {
-          scheduledAt: new Date(parsed.data.scheduledAt),
-        }),
-        ...(parsed.data.durationMinutes !== undefined && {
-          durationMinutes: parsed.data.durationMinutes,
-        }),
-        ...(parsed.data.status && { status: parsed.data.status }),
-        ...(parsed.data.notes !== undefined && { notes: parsed.data.notes }),
-        ...(parsed.data.meetingUrl !== undefined && {
-          meetingUrl: parsed.data.meetingUrl,
-        }),
-      },
-    });
-    // Auto-advance lead status when meeting is marked complete
-    if (parsed.data.status === "COMPLETED") {
-      await tx.lead.updateMany({
-        where: {
-          id: existing.leadId,
-          ownerId: user.id,
-          status: { in: ["NEW", "MEETING_SCHEDULED"] },
-        },
-        data: { status: "MEETING_COMPLETED" },
-      });
-    }
+  await db.meeting.update({
+    where: { id: meetingId },
+    data: {
+      ...(parsed.data.scheduledAt && { scheduledAt: new Date(parsed.data.scheduledAt) }),
+      ...(parsed.data.durationMinutes !== undefined && { durationMinutes: parsed.data.durationMinutes }),
+      ...(parsed.data.status && { status: parsed.data.status }),
+      ...(parsed.data.notes !== undefined && { notes: parsed.data.notes }),
+      ...(parsed.data.meetingUrl !== undefined && { meetingUrl: parsed.data.meetingUrl }),
+    },
   });
 
   revalidatePath("/meetings");
@@ -121,13 +93,13 @@ export async function updateMeetingAction(
 
 export async function deleteMeetingAction(meetingId: string) {
   const user = await requireUser();
-  const meeting = await prisma.meeting.findFirst({
+  const meeting = await db.meeting.findFirst({
     where: { id: meetingId, ownerId: user.id },
     select: { leadId: true },
   });
   if (!meeting) return;
 
-  await prisma.meeting.delete({ where: { id: meetingId } });
+  await db.meeting.delete({ where: { id: meetingId } });
   revalidatePath("/meetings");
   revalidatePath(`/leads/${meeting.leadId}`);
 }

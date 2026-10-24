@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import {
   Card,
@@ -17,7 +17,7 @@ export default async function MeetingsPage() {
   const now = new Date();
 
   const [upcoming, past] = await Promise.all([
-    prisma.meeting.findMany({
+    db.meeting.findMany({
       where: {
         ownerId: user.id,
         scheduledAt: { gte: now },
@@ -27,7 +27,7 @@ export default async function MeetingsPage() {
       include: { lead: { select: { id: true, fullName: true, company: true } } },
       take: 50,
     }),
-    prisma.meeting.findMany({
+    db.meeting.findMany({
       where: {
         ownerId: user.id,
         OR: [{ scheduledAt: { lt: now } }, { status: { not: "SCHEDULED" } }],

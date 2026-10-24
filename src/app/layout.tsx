@@ -1,3 +1,5 @@
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { ConvexProvider } from "@/components/auth/convex-provider";
 import type { Metadata } from "next";
 import { Heebo } from "next/font/google";
 import { cookies } from "next/headers";
@@ -31,6 +33,7 @@ export default async function RootLayout({
   const isDark = theme === "dark";
 
   return (
+    <ConvexAuthNextjsServerProvider>
     <html
       lang="he"
       dir="rtl"
@@ -38,9 +41,9 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background text-foreground font-sans antialiased">
-        {children}
-        <Toaster />
+        <ConvexProvider>{children}<Toaster /></ConvexProvider>
       </body>
     </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }

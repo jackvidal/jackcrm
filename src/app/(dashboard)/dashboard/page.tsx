@@ -8,7 +8,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import {
   Card,
@@ -39,22 +39,22 @@ export default async function DashboardPage() {
     overdueCount,
     todayTasks,
   ] = await Promise.all([
-    prisma.lead.count({ where: { ownerId: user.id } }),
-    prisma.lead.count({ where: { ownerId: user.id, status: "NEW" } }),
-    prisma.lead.count({ where: { ownerId: user.id, status: "DEAL_CLOSED" } }),
-    prisma.meeting.count({
+    db.lead.count({ where: { ownerId: user.id } }),
+    db.lead.count({ where: { ownerId: user.id, status: "NEW" } }),
+    db.lead.count({ where: { ownerId: user.id, status: "DEAL_CLOSED" } }),
+    db.meeting.count({
       where: {
         ownerId: user.id,
         scheduledAt: { gte: now, lte: weekAhead },
         status: "SCHEDULED",
       },
     }),
-    prisma.lead.findMany({
+    db.lead.findMany({
       where: { ownerId: user.id },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-    prisma.meeting.findMany({
+    db.meeting.findMany({
       where: {
         ownerId: user.id,
         scheduledAt: { gte: now },
@@ -64,14 +64,14 @@ export default async function DashboardPage() {
       take: 5,
       include: { lead: { select: { id: true, fullName: true } } },
     }),
-    prisma.task.count({
+    db.task.count({
       where: {
         ownerId: user.id,
         dueDate: { lt: startOfToday },
         status: { notIn: ["DONE", "CANCELED"] },
       },
     }),
-    prisma.task.findMany({
+    db.task.findMany({
       where: {
         ownerId: user.id,
         OR: [

@@ -58,3 +58,7 @@ excalidraw.log
 skills-lock.json
 
 .vercel
+
+# Private legacy source and migration snapshots
+/old/
+/backups/

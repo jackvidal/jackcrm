@@ -1,5 +1,5 @@
 import type { Prisma, TaskStatus, TaskPriority } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { TaskList } from "@/components/tasks/task-list";
 import { TaskFilters } from "@/components/tasks/task-filters";
@@ -44,7 +44,7 @@ export default async function TasksPage({
     where.dueDate = { gte: startOfToday, lt: startOfNextWeek };
   }
 
-  const tasks = await prisma.task.findMany({
+  const tasks = await db.task.findMany({
     where,
     orderBy: [
       { status: "asc" },

@@ -1,0 +1,11 @@
+old
+old1
+backups
+.env*
+!.env.example
+legacy
+tests
+.git
+node_modules
+.next
+*.tsbuildinfo

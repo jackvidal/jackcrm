@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { formatDate } from "@/lib/utils";
@@ -14,7 +14,7 @@ export async function POST(
   }
 
   const { id } = await params;
-  const call = await prisma.call.findFirst({
+  const call = await db.call.findFirst({
     where: { id, ownerId: user.id },
   });
   if (!call) {
@@ -55,7 +55,7 @@ export async function POST(
     })),
   ];
 
-  await prisma.task.createMany({
+  await db.task.createMany({
     data: tasksToCreate.map((task) => ({
       leadId: call.leadId,
       ownerId: user.id,

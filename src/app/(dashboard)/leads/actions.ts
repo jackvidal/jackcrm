@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import {
   leadCreateSchema,
@@ -35,7 +35,7 @@ export async function createLeadAction(
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
   }
 
-  const lead = await prisma.lead.create({
+  const lead = await db.lead.create({
     data: { ...parsed.data, ownerId: user.id },
   });
   revalidatePath("/leads");
@@ -53,7 +53,7 @@ export async function updateLeadAction(
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
   }
 
-  const result = await prisma.lead.updateMany({
+  const result = await db.lead.updateMany({
     where: { id: leadId, ownerId: user.id },
     data: parsed.data,
   });
@@ -66,7 +66,7 @@ export async function updateLeadAction(
 
 export async function deleteLeadAction(leadId: string) {
   const user = await requireUser();
-  await prisma.lead.deleteMany({
+  await db.lead.deleteMany({
     where: { id: leadId, ownerId: user.id },
   });
   revalidatePath("/leads");
@@ -83,7 +83,7 @@ export async function quickUpdateStatusAction(
     | "DEAL_LOST",
 ) {
   const user = await requireUser();
-  await prisma.lead.updateMany({
+  await db.lead.updateMany({
     where: { id: leadId, ownerId: user.id },
     data: { status },
   });
@@ -105,13 +105,13 @@ export async function addNoteAction(
   }
 
   // Verify the lead belongs to the user
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id: leadId, ownerId: user.id },
     select: { id: true },
   });
   if (!lead) return { error: "הליד לא נמצא" };
 
-  await prisma.leadNote.create({
+  await db.leadNote.create({
     data: {
       leadId,
       authorId: user.id,
@@ -124,7 +124,7 @@ export async function addNoteAction(
 
 export async function deleteNoteAction(leadId: string, noteId: string) {
   const user = await requireUser();
-  await prisma.leadNote.deleteMany({
+  await db.leadNote.deleteMany({
     where: { id: noteId, authorId: user.id },
   });
   revalidatePath(`/leads/${leadId}`);

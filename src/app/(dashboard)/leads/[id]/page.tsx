@@ -9,7 +9,7 @@ import {
   Phone,
   StickyNote,
 } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,7 @@ export default async function LeadDetailPage({
   const { id } = await params;
   const user = await requireUser();
 
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id, ownerId: user.id },
     include: {
       leadNotes: {

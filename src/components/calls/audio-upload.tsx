@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CloudUpload, Loader2, Mic, Sparkles } from "lucide-react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useAuthToken } from "@convex-dev/auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/he";
@@ -34,6 +34,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
 
 export function AudioUpload({ callId }: Props) {
   const router = useRouter();
+  const token = useAuthToken();
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
@@ -55,35 +56,23 @@ export function AudioUpload({ callId }: Props) {
 
     setStage("uploading");
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setError("Unauthorized");
-        setStage("idle");
-        return;
-      }
-
-      // 1. Upload to Supabase Storage (own folder enforced by RLS)
-      const path = `${user.id}/${callId}-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("call-audio")
-        .upload(path, file, {
-          contentType: file.type || "audio/mpeg",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(uploadError.message);
-      }
+      if (!token) throw new Error("Unauthorized");
+      const uploadUrl = new URL("/call-audio", process.env.NEXT_PUBLIC_CONVEX_SITE_URL!);
+      uploadUrl.searchParams.set("callId", callId);
+      uploadUrl.searchParams.set("filename", file.name);
+      const uploaded = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": file.type || "audio/mpeg" },
+        body: file,
+      });
+      if (!uploaded.ok) throw new Error(t.calls.audioUpload.error);
 
       // 2. Transcribe with Whisper
       setStage("transcribing");
       const transcribeRes = await fetch(`/api/calls/${callId}/transcribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storagePath: path }),
+        body: JSON.stringify({}),
       });
 
       if (!transcribeRes.ok) {

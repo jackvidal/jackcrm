@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { analyzeWebsite } from "@/lib/ai/analyze-website";
 
@@ -18,7 +18,7 @@ export async function POST(
   }
 
   const { id } = await params;
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id, ownerId: user.id },
   });
   if (!lead) {
@@ -50,7 +50,7 @@ export async function POST(
   try {
     const result = await analyzeWebsite(url);
 
-    const analysis = await prisma.websiteAnalysis.create({
+    const analysis = await db.websiteAnalysis.create({
       data: {
         leadId: lead.id,
         url,
@@ -66,7 +66,7 @@ export async function POST(
 
     // If the lead didn't have a website URL but caller passed one, save it.
     if (!lead.websiteUrl && parsed.data.url) {
-      await prisma.lead.update({
+      await db.lead.update({
         where: { id: lead.id },
         data: { websiteUrl: parsed.data.url },
       });

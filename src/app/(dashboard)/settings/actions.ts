@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { normalizePhone } from "@/lib/whatsapp/send";
 
@@ -47,7 +47,7 @@ export async function updateSettingsAction(
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
   }
 
-  await prisma.profile.update({
+  await db.profile.update({
     where: { id: user.id },
     data: parsed.data,
   });

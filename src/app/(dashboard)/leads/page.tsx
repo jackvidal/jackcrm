@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { LeadStatus, Prisma } from "@prisma/client";
 import { Plus } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { LeadFilters } from "@/components/leads/lead-filters";
@@ -40,7 +40,7 @@ export default async function LeadsPage({
     ];
   }
 
-  const leads = await prisma.lead.findMany({
+  const leads = await db.lead.findMany({
     where,
     orderBy: { createdAt: "desc" },
     take: 200,

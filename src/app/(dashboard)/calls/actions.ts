@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { callCreateSchema, callUpdateSchema } from "@/schemas/call";
 
@@ -31,13 +31,13 @@ export async function createCallAction(
   }
 
   // Verify the lead belongs to the user
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id: parsed.data.leadId, ownerId: user.id },
     select: { id: true },
   });
   if (!lead) return { error: "הליד לא נמצא" };
 
-  await prisma.call.create({
+  await db.call.create({
     data: {
       leadId: parsed.data.leadId,
       ownerId: user.id,
@@ -67,13 +67,13 @@ export async function updateCallAction(
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
   }
 
-  const existing = await prisma.call.findFirst({
+  const existing = await db.call.findFirst({
     where: { id: callId, ownerId: user.id },
     select: { leadId: true },
   });
   if (!existing) return { error: "השיחה לא נמצאה" };
 
-  await prisma.call.update({
+  await db.call.update({
     where: { id: callId },
     data: {
       ...(parsed.data.direction !== undefined && {
@@ -101,12 +101,12 @@ export async function updateCallAction(
 
 export async function deleteCallAction(callId: string) {
   const user = await requireUser();
-  const call = await prisma.call.findFirst({
+  const call = await db.call.findFirst({
     where: { id: callId, ownerId: user.id },
     select: { leadId: true },
   });
   if (!call) return;
 
-  await prisma.call.delete({ where: { id: callId } });
+  await db.call.delete({ where: { id: callId } });
   revalidatePath(`/leads/${call.leadId}`);
 }

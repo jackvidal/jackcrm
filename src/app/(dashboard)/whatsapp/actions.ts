@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { normalizePhone, sendWhatsappText } from "@/lib/whatsapp/send";
 
@@ -40,7 +40,7 @@ export async function sendWhatsappAction(
     };
   }
 
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id: parsed.data.leadId, ownerId: user.id },
     select: { id: true, phone: true },
   });
@@ -56,7 +56,7 @@ export async function sendWhatsappAction(
     parsed.data.body,
   );
 
-  await prisma.whatsappMessage.create({
+  await db.whatsappMessage.create({
     data: {
       ownerId: user.id,
       leadId: lead.id,

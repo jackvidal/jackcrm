@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { LeadForm } from "@/components/leads/lead-form";
 
@@ -10,7 +10,7 @@ export default async function EditLeadPage({
 }) {
   const { id } = await params;
   const user = await requireUser();
-  const lead = await prisma.lead.findFirst({
+  const lead = await db.lead.findFirst({
     where: { id, ownerId: user.id },
   });
   if (!lead) notFound();

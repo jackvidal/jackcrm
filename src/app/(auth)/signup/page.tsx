@@ -12,13 +12,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signupAction, type AuthState } from "../actions";
+import { useLoginAction, type AuthState } from "../actions";
 import { t } from "@/i18n/he";
 
 const initial: AuthState = {};
 
 export default function SignupPage() {
-  const [state, formAction, pending] = useActionState(signupAction, initial);
+  const [state, formAction, pending] = useActionState(useLoginAction("signUp"), initial);
 
   return (
     <Card className="w-full max-w-md">
