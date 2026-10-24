@@ -21,6 +21,7 @@ import { MeetingStatusBadge } from "@/components/meetings/meeting-status-badge";
 import { TaskList } from "@/components/tasks/task-list";
 import { formatDateTime, formatRelative } from "@/lib/utils";
 import { t } from "@/i18n/he";
+import { DEFAULT_METRIC_COLORS, type MetricKey } from "@/lib/branding";
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -99,31 +100,31 @@ export default async function DashboardPage() {
           icon={<Users className="h-5 w-5" />}
           label={t.dashboard.metrics.totalLeads}
           value={totalLeads}
-          tone="primary"
+          tone="total"
         />
         <Stat
           icon={<Sparkles className="h-5 w-5" />}
           label={t.dashboard.metrics.newLeads}
           value={newLeadsCount}
-          tone="warning"
+          tone="new"
         />
         <Stat
           icon={<CalendarCheck className="h-5 w-5" />}
           label={t.dashboard.metrics.meetingsThisWeek}
           value={meetingsThisWeek}
-          tone="default"
+          tone="meetings"
         />
         <Stat
           icon={<AlertCircle className="h-5 w-5" />}
           label={t.dashboard.overdueTasks}
           value={overdueCount}
-          tone={overdueCount > 0 ? "destructive" : "default"}
+          tone="overdue"
         />
         <Stat
           icon={<CheckCircle2 className="h-5 w-5" />}
           label={t.dashboard.metrics.dealsClosed}
           value={closedDeals}
-          tone="success"
+          tone="won"
         />
       </div>
 
@@ -240,21 +241,16 @@ function Stat({
   icon: React.ReactNode;
   label: string;
   value: number;
-  tone: "primary" | "success" | "warning" | "default" | "destructive";
+  tone: MetricKey;
 }) {
-  const toneClass = {
-    primary: "bg-primary/10 text-primary",
-    success: "bg-success/10 text-success",
-    warning: "bg-warning/10 text-warning",
-    default: "bg-secondary text-foreground",
-    destructive: "bg-destructive/10 text-destructive",
-  }[tone];
+  const color = `var(--metric-${tone}, ${DEFAULT_METRIC_COLORS[tone]})`;
 
   return (
-    <Card>
+    <Card className="overflow-hidden border-t-[6px]" style={{ borderTopColor: color }}>
       <CardContent className="flex items-center gap-4 p-6">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${toneClass}`}
+          className="metric-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+          style={{ "--metric-color": color } as React.CSSProperties}
         >
           {icon}
         </div>

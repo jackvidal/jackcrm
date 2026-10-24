@@ -4,6 +4,12 @@ import { v } from "convex/values";
 
 export default defineSchema({
   ...authTables,
+  branding: defineTable({
+    ownerId: v.string(),
+    preferences: v.object({ name: v.string(), primaryColor: v.string(), sidebarColor: v.union(v.string(), v.null()), statusColors: v.record(v.string(), v.string()), metricColors: v.record(v.string(), v.string()) }),
+    logoStorageId: v.optional(v.id("_storage")),
+    updatedAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
   leadWebhooks: defineTable({
     ownerId: v.string(),
     token: v.string(),

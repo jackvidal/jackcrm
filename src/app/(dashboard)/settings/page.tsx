@@ -4,13 +4,17 @@ import { t } from "@/i18n/he";
 import { WebsiteWebhookSettings } from "@/components/settings/website-webhook-settings";
 import { convexClient } from "@/lib/db/client";
 import { api } from "../../../../convex/_generated/api";
+import { getBranding } from "@/lib/branding-server";
+import { BrandingSettings } from "@/components/settings/branding-settings";
 
 export default async function SettingsPage() {
   const user = await requireUser();
   const webhook = await (await convexClient()).query(api.leadWebhooks.current, {});
+  const branding = await getBranding();
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-semibold">{t.settings.title}</h1>
+      <BrandingSettings initial={branding} />
       <SettingsForm
         defaultFullName={user.fullName ?? ""}
         defaultCalOrganizerEmail={user.calOrganizerEmail ?? ""}

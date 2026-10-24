@@ -6,9 +6,10 @@ import { FollowUpControl } from "./follow-up-control";
 import { formatDate } from "@/lib/utils";
 import { t } from "@/i18n/he";
 import type { ReactNode } from "react";
+import { statusColor } from "@/lib/branding";
 
 export function LeadCard({ lead, disabled = false, handle }: { lead: Lead; disabled?: boolean; handle?: ReactNode }) {
-  return <article className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
+  return <article style={{ borderInlineStart: `3px solid ${statusColor(lead.status)}` }} className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
     <div className="flex items-start justify-between gap-2"><div className="min-w-0 space-y-1"><Link href={`/leads/${lead.id}`} className="break-words font-semibold hover:text-primary"><bdi>{lead.fullName}</bdi></Link>{lead.company && <p className="flex items-start gap-1.5 text-xs text-muted-foreground"><Building2 className="mt-0.5 h-3.5 w-3.5 shrink-0" /><bdi>{lead.company}</bdi></p>}</div>{handle}</div>
     <StatusChanger leadId={lead.id} current={lead.status} name={lead.fullName} disabled={disabled} />
     {(lead.email || lead.phone) && <div className="space-y-1.5 text-xs text-muted-foreground">

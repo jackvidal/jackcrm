@@ -8,6 +8,29 @@ import { normalizePhone } from "@/lib/whatsapp/send";
 import { randomBytes } from "node:crypto";
 import { convexClient } from "@/lib/db/client";
 import { api } from "../../../../convex/_generated/api";
+import { brandingSchema } from "@/lib/branding";
+
+export async function saveBrandingAction(preferences: unknown): Promise<FormState> {
+  await requireUser();
+  const parsed = brandingSchema.safeParse(preferences);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "הגדרות לא תקינות" };
+  try {
+    await (await convexClient()).mutation(api.branding.save, { preferences: parsed.data });
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch { return { error: "העיצוב לא נשמר. נסו שוב." }; }
+}
+
+export async function refreshBrandLogoAction(remove = false) {
+  await requireUser();
+  try {
+    const client = await convexClient();
+    if (remove) await client.mutation(api.branding.removeLogo, {});
+    const branding = await client.query(api.branding.current, {});
+    revalidatePath("/", "layout");
+    return { logoUrl: branding.logoUrl };
+  } catch { return { error: "לא ניתן לעדכן את הלוגו כרגע. רעננו ונסו שוב." }; }
+}
 
 const settingsSchema = z.object({
   fullName: z.string().trim().max(100).nullable(),

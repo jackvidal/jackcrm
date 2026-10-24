@@ -99,6 +99,24 @@
 }
 
 @layer utilities {
+  .text-primary, .hover\:text-primary:hover { color: var(--brand-ink-light, hsl(var(--primary))); }
+  .dark .text-primary, .dark .hover\:text-primary:hover { color: var(--brand-ink-dark, hsl(var(--primary))); }
+  .brand-sidebar {
+    background: var(--brand-sidebar, hsl(var(--card)));
+    color: var(--brand-sidebar-text, hsl(var(--foreground)));
+  }
+  .brand-sidebar[data-custom="true"] nav a { color: var(--brand-sidebar-text); }
+  .brand-sidebar[data-custom="true"] nav a:hover,
+  .brand-sidebar[data-custom="true"] nav a[aria-current="page"] {
+    background: color-mix(in srgb, var(--brand-sidebar-text) 14%, transparent);
+  }
+  .brand-sidebar[data-custom="true"] nav a[aria-current="page"] {
+    box-shadow: inset -3px 0 var(--brand-sidebar-text);
+  }
+  .metric-icon {
+    background: color-mix(in srgb, var(--metric-color) 12%, hsl(var(--card)));
+    color: color-mix(in srgb, var(--metric-color) 65%, hsl(var(--foreground)));
+  }
   .scrollbar-thin {
     scrollbar-width: thin;
   }

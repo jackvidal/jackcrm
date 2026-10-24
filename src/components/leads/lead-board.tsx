@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LeadCard } from "./lead-card";
 import { t } from "@/i18n/he";
 import { cn } from "@/lib/utils";
+import { statusColor } from "@/lib/branding";
 
 const keyboardCoordinates: KeyboardCoordinateGetter = (event, { context, currentCoordinates }) => {
   if (!["ArrowLeft", "ArrowRight"].includes(event.code)) return;
@@ -72,7 +73,7 @@ export function LeadBoard({ leads }: { leads: Lead[] }) {
 
 function BoardColumn({ status, leads, disabled }: { status: PipelineStatus; leads: Lead[]; disabled: boolean }) {
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled });
-  return <section ref={setNodeRef} aria-label={`${t.leads.status[status]} — ${leads.length} לידים`} className={cn("flex min-h-80 w-72 max-w-[calc(100vw-5rem)] shrink-0 flex-col rounded-xl border border-border bg-muted/50", isOver && "border-primary bg-primary/5")}>
+  return <section ref={setNodeRef} style={{ borderTop: `4px solid ${statusColor(status)}` }} aria-label={`${t.leads.status[status]} — ${leads.length} לידים`} className={cn("flex min-h-80 w-72 max-w-[calc(100vw-5rem)] shrink-0 flex-col rounded-xl border border-border bg-muted/50", isOver && "border-primary bg-primary/5")}>
     <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-3"><h2 className="text-sm font-semibold">{t.leads.status[status]}</h2><span className="rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">{leads.length}</span></header>
     <div className="flex-1 space-y-3 p-2">
       {leads.length ? leads.map((lead) => <DraggableLead key={lead.id} lead={lead} disabled={disabled} />) : <p className="rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">אין לידים בשלב הזה</p>}

@@ -12,6 +12,7 @@ Hebrew CRM built with Next.js 16, React 19 and TypeScript. Convex runs the CRM d
 - WhatsApp: Wassender outbound messages, inbound threads, delivery statuses and editable Claude reply drafts.
 - Settings: profile name, Cal.com organizer email, WhatsApp number and Wassender token.
 - Website forms: personal inbound webhook, field mapping, retry deduplication and repeat-inquiry notes.
+- Branding: per-account business name, logo, primary/sidebar colors, nine pipeline colors and five dashboard metric colors.
 
 ## Local development
 
@@ -47,6 +48,14 @@ The list, Kanban and card views share filters and sorting. View choice is rememb
 `followUpDate` is an optional ISO calendar date (`YYYY-MM-DD`), independent of stage. Legacy rows without it count as unscheduled. Today's/overdue filters exclude won/lost leads and use the browser date passed by the toolbar; direct links without a day use Asia/Bangkok, the owner's current timezone. Follow-up dates are shown on all three views and the lead detail screen. They are a planning field, not scheduled notifications or outbound messages.
 
 Research: [Fireberry views](https://www.fireberry.com/he/articles/editing-a-view), [Fireberry boards](https://www.fireberry.com/he/articles/working-with-board-view-ask-chatgpt), [Pipedrive pipeline](https://support.pipedrive.com/en/article/pipeline-view).
+
+## Customer branding
+
+Settings → "מיתוג וצבעים" offers a local preview, color pickers/HEX inputs and a color reset before saving. Name and palette changes are saved together. Logo upload/removal saves immediately and retains unsaved palette edits. Branding appears in the authenticated sidebar/mobile header, browser title/icon, buttons, stage badges/menus, Kanban columns, cards and dashboard metric strips. Labels remain visible alongside color; solid fills choose black/white text by contrast and links adjust for light/dark backgrounds.
+
+`branding` is indexed by the authenticated owner's ID, with no caller-supplied owner or file ID at public write boundaries. This follows the CRM's current one-account-per-owner model, not shared organization/team branding. The shared login/signup screen has no tenant identity and keeps the default branding. No billing, custom domains or team permissions are added by this feature.
+
+Logos use the authenticated `/brand-logo` Convex HTTP route (PNG/JPEG/WebP, maximum 2 MiB, bounded body reads and raster signature checks; client also decodes the image). Only the internal attachment mutation accepts storage IDs. Replacement/removal deletes the old file. Queries issue a storage URL only to the owner; the logo itself is a non-private branding asset accessible to anyone with that URL, as described in [Convex storage serving](https://docs.convex.dev/file-storage/serve-files). Preferences use strict validation before storage and CSS serialization. No custom CSS or SVG is accepted.
 
 ## Deployment targets
 

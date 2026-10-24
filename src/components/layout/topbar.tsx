@@ -13,19 +13,24 @@ import {
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { t } from "@/i18n/he";
+import { BrandMark } from "./brand-mark";
+import type { Branding } from "@/lib/branding";
 
 export function Topbar({
   fullName,
   email,
+  branding,
 }: {
   fullName: string | null;
   email: string;
+  branding: Branding;
 }) {
   const { signOut } = useAuthActions();
   async function logoutAction() { await signOut(); window.location.assign("/login"); }
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-sm">
-      <h1 className="text-base font-medium text-muted-foreground">
+      <div className="min-w-0 md:hidden"><BrandMark name={branding.name} logoUrl={branding.logoUrl} /></div>
+      <h1 className="hidden text-base font-medium text-muted-foreground md:block">
         {t.dashboard.welcome}
         {fullName ? `, ${fullName}` : ""}
       </h1>
