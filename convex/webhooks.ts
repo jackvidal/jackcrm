@@ -5,6 +5,7 @@ import { webhookStore } from "./lib/webhookStore";
 import { calWebhookSchema } from "../src/schemas/cal-webhook";
 import { wassenderWebhookSchema } from "../src/schemas/wassender-webhook";
 import type { WhatsappMessageType, WhatsappStatus } from "@prisma/client";
+import { EARLY_LEAD_STATUSES } from "../src/lib/leads";
 
 type WebhookResult = { ok: boolean; duplicate?: boolean; kind?: string };
 
@@ -100,7 +101,7 @@ export const cal = mutation({
       await db.lead.updateMany({
         where: {
           id: lead.id,
-          status: { in: ["NEW", "MEETING_SCHEDULED"] },
+          status: { in: [...EARLY_LEAD_STATUSES, "MEETING_SCHEDULED"] },
         },
         data: { status: "MEETING_COMPLETED" },
       });
@@ -109,7 +110,7 @@ export const cal = mutation({
       event.triggerEvent === "BOOKING_RESCHEDULED"
     ) {
       await db.lead.updateMany({
-        where: { id: lead.id, status: "NEW" },
+        where: { id: lead.id, status: { in: [...EARLY_LEAD_STATUSES] } },
         data: { status: "MEETING_SCHEDULED" },
       });
     }

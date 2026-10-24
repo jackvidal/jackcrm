@@ -1,12 +1,8 @@
 import { z } from "zod";
+import { LEAD_STATUSES, isDateOnly } from "@/lib/leads";
 
-export const leadStatusEnum = z.enum([
-  "NEW",
-  "MEETING_SCHEDULED",
-  "MEETING_COMPLETED",
-  "DEAL_CLOSED",
-  "DEAL_LOST",
-]);
+export const leadStatusEnum = z.enum(LEAD_STATUSES);
+export const followUpDateSchema = z.string().refine(isDateOnly, "תאריך פולואפ לא תקין").nullable();
 export type LeadStatusValue = z.infer<typeof leadStatusEnum>;
 
 const optionalString = z
@@ -34,6 +30,7 @@ export const leadCreateSchema = z.object({
   source: optionalString,
   status: leadStatusEnum.default("NEW"),
   notes: optionalString,
+  followUpDate: followUpDateSchema.optional(),
 });
 
 export const leadUpdateSchema = leadCreateSchema.partial();

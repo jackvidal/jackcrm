@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StatusChanger } from "@/components/leads/status-changer";
+import { FollowUpControl } from "@/components/leads/follow-up-control";
 import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
 import { AddNoteForm } from "@/components/leads/add-note-form";
 import { AnalysisCard } from "@/components/analysis/analysis-card";
@@ -79,6 +80,7 @@ export default async function LeadDetailPage({
             נוצר {formatRelative(lead.createdAt)}
             {lead.source ? ` · ${lead.source}` : ""}
           </p>
+          <FollowUpControl leadId={lead.id} name={lead.fullName} date={lead.followUpDate} closed={lead.status === "DEAL_CLOSED" || lead.status === "DEAL_LOST"} />
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">

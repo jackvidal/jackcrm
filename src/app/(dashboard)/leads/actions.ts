@@ -8,7 +8,10 @@ import {
   leadCreateSchema,
   leadUpdateSchema,
   leadNoteCreateSchema,
+  leadStatusEnum,
+  followUpDateSchema,
 } from "@/schemas/lead";
+import type { PipelineStatus } from "@/lib/leads";
 
 export type FormState = { error?: string; ok?: boolean };
 
@@ -22,6 +25,7 @@ function parseForm(formData: FormData) {
     source: (formData.get("source") as string) ?? "manual",
     status: (formData.get("status") as string) ?? "NEW",
     notes: (formData.get("notes") as string) ?? "",
+    followUpDate: (formData.get("followUpDate") as string) || null,
   };
 }
 
@@ -75,20 +79,31 @@ export async function deleteLeadAction(leadId: string) {
 
 export async function quickUpdateStatusAction(
   leadId: string,
-  status:
-    | "NEW"
-    | "MEETING_SCHEDULED"
-    | "MEETING_COMPLETED"
-    | "DEAL_CLOSED"
-    | "DEAL_LOST",
-) {
+  status: PipelineStatus,
+): Promise<FormState> {
   const user = await requireUser();
-  await db.lead.updateMany({
+  const parsed = leadStatusEnum.safeParse(status);
+  if (!parsed.success) return { error: "סטטוס לא תקין" };
+  const result = await db.lead.updateMany({
     where: { id: leadId, ownerId: user.id },
-    data: { status },
+    data: { status: parsed.data },
   });
+  if (!result.count) return { error: "הליד לא נמצא" };
   revalidatePath("/leads");
   revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+export async function updateFollowUpAction(leadId: string, date: string | null): Promise<FormState> {
+  const user = await requireUser();
+  const parsed = followUpDateSchema.safeParse(date);
+  if (!parsed.success) return { error: "תאריך פולואפ לא תקין" };
+  const result = await db.lead.updateMany({ where: { id: leadId, ownerId: user.id }, data: { followUpDate: parsed.data } });
+  if (!result.count) return { error: "הליד לא נמצא" };
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
+  return { ok: true };
 }
 
 export async function addNoteAction(

@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import type { Lead, LeadStatus } from "@prisma/client";
+import type { Lead } from "@prisma/client";
+import { LEAD_STATUSES } from "@/lib/leads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,14 +27,6 @@ import {
   type FormState,
 } from "@/app/(dashboard)/leads/actions";
 import { t } from "@/i18n/he";
-
-const STATUS_VALUES: LeadStatus[] = [
-  "NEW",
-  "MEETING_SCHEDULED",
-  "MEETING_COMPLETED",
-  "DEAL_CLOSED",
-  "DEAL_LOST",
-];
 
 const initial: FormState = {};
 
@@ -63,7 +56,7 @@ export function LeadForm({ lead }: { lead?: Lead }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_VALUES.map((s) => (
+                {LEAD_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {t.leads.status[s]}
                   </SelectItem>
@@ -91,6 +84,9 @@ export function LeadForm({ lead }: { lead?: Lead }) {
           </Field>
           <Field label={`${t.leads.fields.company} (${t.common.optional})`}>
             <Input name="company" defaultValue={lead?.company ?? ""} />
+          </Field>
+          <Field label="תאריך פולואפ (לא חובה)">
+            <Input type="date" name="followUpDate" aria-label="תאריך פולואפ" dir="ltr" defaultValue={lead?.followUpDate ?? ""} />
           </Field>
           <Field label={`${t.leads.fields.websiteUrl} (${t.common.optional})`}>
             <Input

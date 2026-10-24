@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Lead } from "@prisma/client";
-import { LeadStatusBadge } from "./lead-status-badge";
+import { StatusChanger } from "./status-changer";
+import { FollowUpControl } from "./follow-up-control";
 import { formatDate } from "@/lib/utils";
 import { t } from "@/i18n/he";
 
@@ -19,11 +20,13 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
-            <tr className="text-end">
+            <tr className="text-start">
               <Th>{t.leads.fields.fullName}</Th>
               <Th>{t.leads.fields.company}</Th>
               <Th>{t.leads.fields.email}</Th>
+              <Th>{t.leads.fields.phone}</Th>
               <Th>{t.leads.fields.status}</Th>
+              <Th>פולואפ הבא</Th>
               <Th>{t.leads.fields.createdAt}</Th>
             </tr>
           </thead>
@@ -31,7 +34,7 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
             {leads.map((lead) => (
               <tr
                 key={lead.id}
-                className="text-end transition-colors hover:bg-muted/40"
+                className="text-start transition-colors hover:bg-muted/40"
               >
                 <Td>
                   <Link
@@ -48,7 +51,13 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
                   <bdi>{lead.email ?? "—"}</bdi>
                 </Td>
                 <Td>
-                  <LeadStatusBadge status={lead.status} />
+                  <bdi>{lead.phone ?? "—"}</bdi>
+                </Td>
+                <Td>
+                  <StatusChanger leadId={lead.id} current={lead.status} name={lead.fullName} />
+                </Td>
+                <Td>
+                  <FollowUpControl leadId={lead.id} name={lead.fullName} date={lead.followUpDate} closed={lead.status === "DEAL_CLOSED" || lead.status === "DEAL_LOST"} />
                 </Td>
                 <Td className="text-muted-foreground">
                   {formatDate(lead.createdAt)}
@@ -64,7 +73,7 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-4 py-3 text-end text-xs font-semibold uppercase tracking-wide">
+    <th className="whitespace-nowrap px-4 py-3 text-start text-xs font-semibold">
       {children}
     </th>
   );

@@ -1,51 +1,25 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { LayoutGrid, List } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+import { Columns3, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { LeadView } from "@/lib/leads";
 
-type View = "list" | "board";
-
-export function ViewToggle({ current }: { current: View }) {
+export function ViewToggle({ current }: { current: LeadView }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-
-  const switchTo = (next: View) => {
+  const [pending, startTransition] = useTransition();
+  function switchTo(view: LeadView) {
     const search = new URLSearchParams(params.toString());
-    if (next === "list") search.delete("view");
-    else search.set("view", "board");
-    router.replace(`${pathname}?${search.toString()}`);
-  };
-
-  return (
-    <div className="inline-flex rounded-md border border-border bg-card p-0.5 text-sm">
-      <button
-        type="button"
-        onClick={() => switchTo("list")}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded px-2.5 py-1 transition",
-          current === "list"
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <List className="h-3.5 w-3.5" />
-        טבלה
-      </button>
-      <button
-        type="button"
-        onClick={() => switchTo("board")}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded px-2.5 py-1 transition",
-          current === "board"
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <LayoutGrid className="h-3.5 w-3.5" />
-        לוח
-      </button>
-    </div>
-  );
+    search.set("view", view);
+    document.cookie = `crm-leads-view=${view}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+    startTransition(() => router.replace(`${pathname}?${search.toString()}`, { scroll: false }));
+  }
+  return <div role="group" aria-label="תצוגת לידים" className="inline-flex rounded-md border border-border bg-card p-1 text-sm">
+    {([{ value: "list", label: "רשימה", icon: List }, { value: "board", label: "קנבאן", icon: Columns3 }, { value: "cards", label: "כרטיסיות", icon: LayoutGrid }] as const).map(({ value, label, icon: Icon }) => (
+      <button key={value} type="button" aria-pressed={current === value} disabled={pending} onClick={() => switchTo(value)} className={cn("inline-flex items-center gap-1.5 rounded px-3 py-2 transition-colors disabled:opacity-60", current === value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}><Icon className="h-4 w-4" />{label}</button>
+    ))}
+  </div>;
 }

@@ -80,8 +80,12 @@ export const t = {
     },
     status: {
       NEW: "ליד חדש",
+      CONTACTED: "נוצר קשר",
+      FOLLOW_UP: "פולואפ",
       MEETING_SCHEDULED: "נקבעה פגישה",
       MEETING_COMPLETED: "פגישה הושלמה",
+      PROPOSAL_SENT: "נשלחה הצעה",
+      NEGOTIATION: "משא ומתן",
       DEAL_CLOSED: "עסקה נסגרה",
       DEAL_LOST: "עסקה אבדה",
     },

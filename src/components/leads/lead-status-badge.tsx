@@ -7,8 +7,12 @@ const variantMap: Record<
   "default" | "secondary" | "success" | "warning" | "destructive" | "outline"
 > = {
   NEW: "default",
+  CONTACTED: "secondary",
+  FOLLOW_UP: "warning",
   MEETING_SCHEDULED: "secondary",
   MEETING_COMPLETED: "warning",
+  PROPOSAL_SENT: "outline",
+  NEGOTIATION: "warning",
   DEAL_CLOSED: "success",
   DEAL_LOST: "destructive",
 };

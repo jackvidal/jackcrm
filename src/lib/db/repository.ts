@@ -5,6 +5,7 @@ import { dateFields, fields, type Table } from "../../../convex/lib/models";
 import type { Row, Where } from "../../../convex/lib/filters";
 import type { Write } from "../../../convex/lib/store";
 import { convexClient } from "./client";
+import { LEAD_STATUSES } from "../leads";
 
 // Transitional, explicitly limited repository contract. Prisma supplies only
 // erased TypeScript shapes; every runtime read/write goes to Convex.
@@ -25,7 +26,7 @@ function hydrate(table: Table, row: Row): Row {
   return result;
 }
 const enumOrder: Record<string, string[]> = {
-  "lead.status": ["NEW", "MEETING_SCHEDULED", "MEETING_COMPLETED", "DEAL_CLOSED", "DEAL_LOST"],
+  "lead.status": [...LEAD_STATUSES],
   "task.status": ["PENDING", "IN_PROGRESS", "DONE", "CANCELED"],
   "task.priority": ["LOW", "MEDIUM", "HIGH"],
   "meeting.status": ["SCHEDULED", "COMPLETED", "CANCELED", "NO_SHOW"],

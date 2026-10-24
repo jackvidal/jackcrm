@@ -35,8 +35,9 @@ export default defineSchema({
     company: v.union(v.string(), v.null()),
     websiteUrl: v.union(v.string(), v.null()),
     source: v.union(v.string(), v.null()),
-    status: v.union(v.literal("NEW"), v.literal("MEETING_SCHEDULED"), v.literal("MEETING_COMPLETED"), v.literal("DEAL_CLOSED"), v.literal("DEAL_LOST")),
+    status: v.union(v.literal("NEW"), v.literal("CONTACTED"), v.literal("FOLLOW_UP"), v.literal("MEETING_SCHEDULED"), v.literal("MEETING_COMPLETED"), v.literal("PROPOSAL_SENT"), v.literal("NEGOTIATION"), v.literal("DEAL_CLOSED"), v.literal("DEAL_LOST")),
     notes: v.union(v.string(), v.null()),
+    followUpDate: v.optional(v.union(v.string(), v.null())),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_legacy_id", ["id"])

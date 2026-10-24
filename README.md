@@ -4,7 +4,7 @@ Hebrew CRM built with Next.js 16, React 19 and TypeScript. Convex runs the CRM d
 
 ## Capabilities
 
-- Leads: list and board views, search, status filters, editing, deletion and note timelines.
+- Leads: list, draggable Kanban and card views; nine sales stages, date-only follow-up scheduling, quick filters, search, sorting, editing, deletion and note timelines.
 - Meetings: scheduling, statuses and automatic lead pipeline updates; signed Cal.com webhooks.
 - Tasks: priorities, due dates, filters, completion and creation from AI call analysis.
 - Calls: manual logging, private audio/video uploads up to 25 MB, Hebrew Whisper transcription and Claude analysis.
@@ -38,7 +38,17 @@ npm run typecheck
 npm run build
 ```
 
-## Deployment
+## Lead pipeline and views
+
+Lead stages: new, contacted, follow-up, meeting scheduled/completed, proposal sent, negotiation, won and lost. Existing stage IDs remain valid; no live leads are automatically relabeled. Cal.com and manual meeting creation can advance early stages, but never regress proposal, negotiation, won or lost stages.
+
+The list, Kanban and card views share filters and sorting. View choice is remembered in a browser cookie and can be overridden by `?view=list`, `board` or `cards`. Kanban supports a pointer/touch drag handle and keyboard movement (Space/Enter to start, left/right arrows, Space/Enter to drop, Escape to cancel); every card also has a status menu. Moving changes the stage, not a manual ordering rank.
+
+`followUpDate` is an optional ISO calendar date (`YYYY-MM-DD`), independent of stage. Legacy rows without it count as unscheduled. Today's/overdue filters exclude won/lost leads and use the browser date passed by the toolbar; direct links without a day use Asia/Bangkok, the owner's current timezone. Follow-up dates are shown on all three views and the lead detail screen. They are a planning field, not scheduled notifications or outbound messages.
+
+Research: [Fireberry views](https://www.fireberry.com/he/articles/editing-a-view), [Fireberry boards](https://www.fireberry.com/he/articles/working-with-board-view-ask-chatgpt), [Pipedrive pipeline](https://support.pipedrive.com/en/article/pipeline-view).
+
+## Deployment targets
 
 Production Convex deployment: `acrobatic-fox-775` in the `jack-vidal/jackcrm` project. Development: `unique-porcupine-370`. Keep development test accounts and records out of production.
 

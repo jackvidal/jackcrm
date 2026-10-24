@@ -12,6 +12,7 @@ export const defaults = {
     "websiteUrl": null,
     "source": "manual",
     "status": "NEW",
+    "followUpDate": null,
     "notes": null
   },
   "leadNote": {},
@@ -120,6 +121,7 @@ export const fields = {
     "phone",
     "company",
     "websiteUrl",
+    "followUpDate",
     "source",
     "status",
     "notes",

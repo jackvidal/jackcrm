@@ -10,8 +10,12 @@ datasource db {
 
 enum LeadStatus {
   NEW
+  CONTACTED
+  FOLLOW_UP
   MEETING_SCHEDULED
   MEETING_COMPLETED
+  PROPOSAL_SENT
+  NEGOTIATION
   DEAL_CLOSED
   DEAL_LOST
 }
@@ -99,6 +103,7 @@ model Lead {
   source     String?    @default("manual")
   status     LeadStatus @default(NEW)
   notes      String?
+  followUpDate String?   @map("follow_up_date")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
 

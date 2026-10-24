@@ -5,6 +5,7 @@ import { defaults, fields, type Table } from "./models";
 import { matches, type Row, type Where } from "./filters";
 import type { Principal } from "./auth";
 import { internal } from "../_generated/api";
+import { EARLY_LEAD_STATUSES, isDateOnly } from "../../src/lib/leads";
 
 // Dynamic access is confined to this module; schema.ts validates every stored
 // document, and table names are validated at each public function boundary.
@@ -125,6 +126,7 @@ export async function write(ctx: MutationCtx, user: Principal, command: Write): 
   }
   const now = Date.now();
   const row: Row = existing ? { ...clean(existing), ...input } : { ...defaults[table], id: uuid(), createdAt: now, ...input };
+  if (table === "lead" && row.followUpDate != null && (typeof row.followUpDate !== "string" || !isDateOnly(row.followUpDate))) throw new ConvexError("Invalid follow-up date");
   if ((fields[table] as readonly string[]).includes("updatedAt")) row.updatedAt = now;
   await validateParent(ctx, user, table, row);
   await unique(ctx, table, row, existing);
@@ -134,7 +136,7 @@ export async function write(ctx: MutationCtx, user: Principal, command: Write): 
   // Meeting and pipeline changes commit as one Convex transaction.
   if (table === "meeting") {
     const lead = await byId(ctx, "lead", row.leadId);
-    if (lead && ((!existing && row.status === "SCHEDULED" && lead.status === "NEW") || (row.status === "COMPLETED" && ["NEW", "MEETING_SCHEDULED"].includes(lead.status)))) {
+    if (lead && ((!existing && row.status === "SCHEDULED" && EARLY_LEAD_STATUSES.includes(lead.status)) || (row.status === "COMPLETED" && [...EARLY_LEAD_STATUSES, "MEETING_SCHEDULED"].includes(lead.status)))) {
       await ctx.db.patch(lead._id, { status: row.status === "COMPLETED" ? "MEETING_COMPLETED" : "MEETING_SCHEDULED", updatedAt: now });
     }
   }
