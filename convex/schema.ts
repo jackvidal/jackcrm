@@ -4,6 +4,15 @@ import { v } from "convex/values";
 
 export default defineSchema({
   ...authTables,
+  leadWebhooks: defineTable({
+    ownerId: v.string(),
+    token: v.string(),
+    enabled: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastReceivedAt: v.optional(v.number()),
+    receivedCount: v.number(),
+  }).index("by_ownerId", ["ownerId"]).index("by_token", ["token"]),
   audioFiles: defineTable({ ownerId: v.string(), callId: v.string(), storageId: v.id("_storage"), filename: v.string(), createdAt: v.number() }).index("by_call", ["callId"]),
   profile: defineTable({
     id: v.string(),

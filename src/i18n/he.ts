@@ -62,6 +62,7 @@ export const t = {
       manual: "ידני",
       "cal.com": "Cal.com",
       import: "ייבוא",
+      website: "טופס אתר",
     },
     detail: {
       info: "פרטי הליד",

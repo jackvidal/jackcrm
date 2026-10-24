@@ -11,6 +11,7 @@ Hebrew CRM built with Next.js 16, React 19 and TypeScript. Convex runs the CRM d
 - Website analysis: structured Hebrew summaries, issues, opportunities and recommended services.
 - WhatsApp: Wassender outbound messages, inbound threads, delivery statuses and editable Claude reply drafts.
 - Settings: profile name, Cal.com organizer email, WhatsApp number and Wassender token.
+- Website forms: personal inbound webhook, field mapping, retry deduplication and repeat-inquiry notes.
 
 ## Local development
 
@@ -54,6 +55,33 @@ In the new account's Settings, enter the Cal.com organizer email and the WhatsAp
 - OpenAI powers Whisper transcription; Anthropic powers website analysis, call analysis and draft replies. Live provider delivery requires valid credentials and configured provider accounts.
 
 ## Architecture and maintenance
+
+### Website lead webhook
+
+In Settings → "לידים מטופס באתר", create and copy the personal webhook URL. Send `POST` requests from the form provider, Make/Zapier, or your website's server. Keep the token out of public frontend code. You can rotate or disable it in Settings; old URLs immediately stop working. Cal.com and WhatsApp integrations are independent.
+
+Endpoint: `https://jackcrm.vercel.app/api/webhooks/leads?token=YOUR_TOKEN`. Alternatively send `Authorization: Bearer YOUR_TOKEN` to `/api/webhooks/leads`. Supported content types: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data` without files. Maximum body size: 64 KB.
+
+```json
+{
+  "fullName": "ישראל ישראלי",
+  "email": "lead@example.com",
+  "company": "עסק לדוגמה",
+  "message": "אשמח לשמוע פרטים",
+  "source": "website",
+  "submissionId": "unique-form-submission-123"
+}
+```
+
+Required: `fullName` (also `name` / `full_name`, or `first_name` + `last_name`) and at least one of `email` / `phone`. Optional: `company`, `websiteUrl`, `notes` / `message`, `source` / `utm_source`. Phone values must be strings; spaces, punctuation and a leading `+` are removed. Country codes are not inferred. `websiteUrl` must be an HTTP(S) URL. Flat form fields, `form_fields[name]`, nested `form_fields`, and `fields.name.value` are supported. Map your form's field IDs to the documented names; arbitrary plugin-specific labels are not inferred.
+
+Successful requests return HTTP 200 and `ok: true`. A matching owner-scoped email or phone adds an internal note to the existing lead without overwriting contact data or sales status. If email and phone match different leads, HTTP 409 requests manual resolution. Missing/disabled token: 401; invalid fields/body: 400; oversized body: 413; unsupported content type: 415; retryable backend failure: 500.
+
+Send a unique `Idempotency-Key` header or `submissionId` per submission, and reuse it on retries (maximum 200 characters). Without an ID, identical normalized payloads are deduplicated within the UTC calendar day. Deduplication, lead/note creation and the receipt counter commit atomically. No outbound messages are sent. Settings shows the last accepted inquiry and the accepted-submission count.
+
+For Elementor, enable Advanced Data and set field IDs to the names above. PHP-style `fields[name][value]` form keys are also supported. Elementor's default webhook uses field labels instead of IDs; see the [official FAQ](https://elementor.com/help/build-with-elementor-ai-faq/).
+
+### Code layout
 
 - `convex/schema.ts`: CRM, auth and audio metadata tables with indexes.
 - `convex/auth.ts`: password authentication and atomic profile creation.
