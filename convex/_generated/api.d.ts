@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as branding from "../branding.js";
 import type * as crm from "../crm.js";
 import type * as http from "../http.js";
+import type * as leadImports from "../leadImports.js";
 import type * as leadWebhooks from "../leadWebhooks.js";
 import type * as lib_audioFiles from "../lib/audioFiles.js";
 import type * as lib_auth from "../lib/auth.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   branding: typeof branding;
   crm: typeof crm;
   http: typeof http;
+  leadImports: typeof leadImports;
   leadWebhooks: typeof leadWebhooks;
   "lib/audioFiles": typeof lib_audioFiles;
   "lib/auth": typeof lib_auth;

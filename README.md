@@ -5,6 +5,7 @@ Hebrew CRM built with Next.js 16, React 19 and TypeScript. Convex runs the CRM d
 ## Capabilities
 
 - Leads: list, draggable Kanban and card views; nine sales stages, date-only follow-up scheduling, quick filters, search, sorting, editing, deletion and note timelines.
+- Bulk lead import: XLSX, CSV or pasted spreadsheet rows; column/status mapping, preview, duplicate detection and downloadable results.
 - Meetings: scheduling, statuses and automatic lead pipeline updates; signed Cal.com webhooks.
 - Tasks: priorities, due dates, filters, completion and creation from AI call analysis.
 - Calls: manual logging, private audio/video uploads up to 25 MB, Hebrew Whisper transcription and Claude analysis.
@@ -48,6 +49,18 @@ The list, Kanban and card views share filters and sorting. View choice is rememb
 `followUpDate` is an optional ISO calendar date (`YYYY-MM-DD`), independent of stage. Legacy rows without it count as unscheduled. Today's/overdue filters exclude won/lost leads and use the browser date passed by the toolbar; direct links without a day use Asia/Bangkok, the owner's current timezone. Follow-up dates are shown on all three views and the lead detail screen. They are a planning field, not scheduled notifications or outbound messages.
 
 Research: [Fireberry views](https://www.fireberry.com/he/articles/editing-a-view), [Fireberry boards](https://www.fireberry.com/he/articles/working-with-board-view-ask-chatgpt), [Pipedrive pipeline](https://support.pipedrive.com/en/article/pipeline-view).
+
+## Bulk lead import
+
+Leads → "ייבוא לידים" opens `/leads/import`. Import XLSX workbooks (select a sheet), UTF-8/Windows-1255 CSV, or paste a table from Excel/Google Sheets. Limits are 5 MiB per file, 5,000 data rows per sheet and 50 columns. CSV handles BOMs, quoted separators/newlines, semicolons and tabs. XLS is not supported; save it as XLSX first. Files are parsed locally; only validated, mapped lead fields are sent to Convex.
+
+Map a full name or first/last names, email, phone, company, website, source, status, follow-up date and notes. Hebrew/English headers and known statuses are suggested; custom statuses require explicit mapping. Empty status defaults to the chosen stage. Dates accept `YYYY-MM-DD`, `DD/MM/YYYY`, `DD.MM.YYYY` or Excel date cells. Numeric Excel phone cells are rejected because leading zeroes may already be lost: use text cells and verify the full number. Contactless named leads are allowed.
+
+Preview validates every row and checks owner-scoped contact indexes. Duplicates within a file or against existing leads are skipped; conflicting contact matches and invalid rows are reported. Existing data/stages are never overwritten. Email matching ignores case and surrounding whitespace; phone matching removes punctuation, but does not infer country codes. A previously imported identical row is also recognized by its normalized content fingerprint, including rows without contact details. CSV reports preserve original cells and escape spreadsheet formulas.
+
+Writes use batches of 25 with validation, duplicate checks, lead creation and fingerprint receipt in one mutation. Contact checks run again at commit, so concurrent edits are respected. A request ID and row number recover the original result if a response is lost; retry in the same page uses that ID. Pause stops after the current batch; keep the page open to resume with its counters. After a reload, import the file again: existing records are skipped. No notifications, meetings or messages are created by importing leads.
+
+Derived `emailKey`, `phoneKey` and `contactKeysVersion` fields are maintained by the shared lead writer (including webhook paths). They are not writable through the generic CRM API or exposed by compatibility reads. After deploying the schema/functions, run `npx convex run --prod leadImports:backfillContactKeys '{}'` repeatedly until `done: true` **before promoting the frontend** (omit `--prod` for the named development deployment). This bounded, repeatable backfill changes only derived keys, not contact data, stages or timestamps. Import endpoints refuse to run for an owner while any old lead lacks keys.
 
 ## Customer branding
 

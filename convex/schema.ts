@@ -4,6 +4,7 @@ import { v } from "convex/values";
 
 export default defineSchema({
   ...authTables,
+  leadImportRows: defineTable({ ownerId: v.string(), fingerprint: v.string(), leadId: v.string(), requestId: v.string(), row: v.number(), createdAt: v.number() }).index("by_owner_fingerprint", ["ownerId", "fingerprint"]),
   branding: defineTable({
     ownerId: v.string(),
     preferences: v.object({ name: v.string(), primaryColor: v.string(), sidebarColor: v.union(v.string(), v.null()), statusColors: v.record(v.string(), v.string()), metricColors: v.record(v.string(), v.string()) }),
@@ -38,6 +39,9 @@ export default defineSchema({
     fullName: v.string(),
     email: v.union(v.string(), v.null()),
     phone: v.union(v.string(), v.null()),
+    emailKey: v.optional(v.union(v.string(), v.null())),
+    phoneKey: v.optional(v.union(v.string(), v.null())),
+    contactKeysVersion: v.optional(v.number()),
     company: v.union(v.string(), v.null()),
     websiteUrl: v.union(v.string(), v.null()),
     source: v.union(v.string(), v.null()),
@@ -50,6 +54,10 @@ export default defineSchema({
     .index("by_ownerId", ["ownerId", "createdAt"])
     .index("by_owner_email", ["ownerId", "email", "createdAt"])
     .index("by_owner_phone", ["ownerId", "phone", "createdAt"])
+    .index("by_owner_emailKey", ["ownerId", "emailKey"])
+    .index("by_owner_phoneKey", ["ownerId", "phoneKey"])
+    .index("by_contactKeysVersion", ["contactKeysVersion"])
+    .index("by_owner_contactKeysVersion", ["ownerId", "contactKeysVersion"])
     .index("by_owner_status", ["ownerId", "status", "createdAt"]),
   leadNote: defineTable({
     id: v.string(),

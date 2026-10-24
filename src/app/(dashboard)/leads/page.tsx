@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   return <div className="space-y-5">
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-3"><h1 className="text-2xl font-semibold">{t.leads.title}</h1><span className="rounded-full bg-muted px-2.5 py-1 text-sm text-muted-foreground">{leads.length}</span></div>
-      <div className="flex flex-wrap items-center gap-3"><ViewToggle current={currentView} /><Button asChild><Link href="/leads/new"><Plus className="h-4 w-4" />{t.leads.new}</Link></Button></div>
+      <div className="flex flex-wrap items-center gap-3"><ViewToggle current={currentView} /><Button asChild variant="outline"><Link href="/leads/import"><Upload className="h-4 w-4" />ייבוא לידים</Link></Button><Button asChild><Link href="/leads/new"><Plus className="h-4 w-4" />{t.leads.new}</Link></Button></div>
     </div>
     <LeadFilters />
     {leads.length === 0 ? <div className="rounded-xl border border-dashed bg-card px-4 py-14 text-center"><p className="font-medium">{filtered ? "אין לידים התואמים לסינון" : t.leads.none}</p><p className="mt-2 text-sm text-muted-foreground">{filtered ? "נסו לבחור סטטוס אחר או לנקות את הסינון." : t.leads.noneHint}</p></div>

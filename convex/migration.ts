@@ -4,6 +4,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { tableValidator } from "./crm";
 import { byId, clean, unique } from "./lib/store";
 import { fields } from "./lib/models";
+import { emailKey, phoneKey } from "../src/lib/lead-import";
 
 function canonical(value: any): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
@@ -33,7 +34,7 @@ export const importBatch = internalMutation({
       }
       if (row.ownerId && !await byId(ctx, "profile", row.ownerId)) throw new ConvexError("Missing snapshot profile");
       await unique(ctx, table, row);
-      await ctx.db.insert(table, row);
+      await ctx.db.insert(table, table === "lead" ? { ...row, emailKey: emailKey(row.email), phoneKey: phoneKey(row.phone), contactKeysVersion: 1 } : row);
       inserted++;
     }
     return { inserted, skipped };

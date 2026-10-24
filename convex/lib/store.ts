@@ -6,6 +6,7 @@ import { matches, type Row, type Where } from "./filters";
 import type { Principal } from "./auth";
 import { internal } from "../_generated/api";
 import { EARLY_LEAD_STATUSES, isDateOnly } from "../../src/lib/leads";
+import { emailKey, phoneKey } from "../../src/lib/lead-import";
 
 // Dynamic access is confined to this module; schema.ts validates every stored
 // document, and table names are validated at each public function boundary.
@@ -14,7 +15,7 @@ export async function byId(ctx: Ctx, table: Table, id: string): Promise<Row | nu
   return (ctx.db.query(table) as any).withIndex("by_legacy_id", (q: any) => q.eq("id", id)).unique();
 }
 export function clean(row: Row): Row {
-  const { _id, _creationTime, ...data } = row;
+  const { _id, _creationTime, emailKey: _emailKey, phoneKey: _phoneKey, contactKeysVersion: _version, ...data } = row;
   return data;
 }
 export async function canAccess(ctx: Ctx, user: Principal, table: Table, row: Row): Promise<boolean> {
@@ -126,6 +127,7 @@ export async function write(ctx: MutationCtx, user: Principal, command: Write): 
   }
   const now = Date.now();
   const row: Row = existing ? { ...clean(existing), ...input } : { ...defaults[table], id: uuid(), createdAt: now, ...input };
+  if (table === "lead") Object.assign(row, { emailKey: emailKey(row.email), phoneKey: phoneKey(row.phone), contactKeysVersion: 1 });
   if (table === "lead" && row.followUpDate != null && (typeof row.followUpDate !== "string" || !isDateOnly(row.followUpDate))) throw new ConvexError("Invalid follow-up date");
   if ((fields[table] as readonly string[]).includes("updatedAt")) row.updatedAt = now;
   await validateParent(ctx, user, table, row);
