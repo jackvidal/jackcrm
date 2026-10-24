@@ -1,6 +1,6 @@
 // These are the scalar filters used by the existing server-rendered CRM.
 export type Scalar = string | number | boolean | null;
-export type Condition = Scalar | { in?: Scalar[]; notIn?: Scalar[]; lt?: Scalar; lte?: Scalar; gt?: Scalar; gte?: Scalar; contains?: string; mode?: "insensitive" };
+export type Condition = Scalar | { not?: Scalar; in?: Scalar[]; notIn?: Scalar[]; lt?: Scalar; lte?: Scalar; gt?: Scalar; gte?: Scalar; contains?: string; mode?: "insensitive" };
 export type Where = { [field: string]: Condition | Where[] | undefined };
 export type Row = Record<string, any>;
 
@@ -12,6 +12,9 @@ export function matches(row: Row, where: Where = {}): boolean {
     const value = row[key];
     if (condition === null || typeof condition !== "object") return value === condition;
     const c = condition as Exclude<Condition, Scalar>;
+    const supported = new Set(["not", "in", "notIn", "lt", "lte", "gt", "gte", "contains", "mode"]);
+    if (Object.keys(c).some((key) => !supported.has(key))) throw new Error("Unsupported database filter");
+    if (c.not !== undefined && (value === c.not || (value == null && c.not !== null))) return false;
     if (c.in && !c.in.includes(value)) return false;
     if (c.notIn && (value === null || c.notIn.includes(value))) return false;
     if (c.lt !== undefined && (value == null || !(value < c.lt!))) return false;

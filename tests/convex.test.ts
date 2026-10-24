@@ -52,6 +52,18 @@ describe("Convex CRM migration", () => {
     expect((await owner.query(api.crm.page, page("task"))).page).toEqual([]);
   });
 
+  test("meeting history excludes scheduled future meetings and includes canceled ones", async () => {
+    const { owner, lead } = await setup();
+    await owner.mutation(api.crm.commit, { commands: [
+      { table: "meeting", operation: "create", data: { ownerId, leadId: lead.id, scheduledAt: 2000, status: "SCHEDULED" } },
+      { table: "meeting", operation: "create", data: { ownerId, leadId: lead.id, scheduledAt: 2000, status: "CANCELED" } },
+      { table: "meeting", operation: "create", data: { ownerId, leadId: lead.id, scheduledAt: 500, status: "SCHEDULED" } },
+    ] });
+    const history = await owner.query(api.crm.page, page("meeting", { OR: [{ scheduledAt: { lt: 1000 } }, { status: { not: "SCHEDULED" } }] }));
+    expect(history.page).toHaveLength(2);
+    expect(history.page.some((row: { scheduledAt: number; status: string }) => row.scheduledAt === 2000 && row.status === "SCHEDULED")).toBe(false);
+  });
+
   test("lead deletion removes all history in scheduled batches", async () => {
     vi.useFakeTimers();
     try {
