@@ -117,6 +117,22 @@
     background: color-mix(in srgb, var(--metric-color) 12%, hsl(var(--card)));
     color: color-mix(in srgb, var(--metric-color) 65%, hsl(var(--foreground)));
   }
+  .dashboard-panel {
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    background: hsl(var(--card));
+    box-shadow: 0 3px 16px -10px hsl(var(--foreground) / 0.12);
+  }
+  .dashboard-metric {
+    box-shadow: 0 4px 20px -12px hsl(var(--foreground) / 0.18);
+  }
+  .dashboard-bar {
+    background: linear-gradient(to top, color-mix(in srgb, var(--bar-color) 22%, hsl(var(--card))), color-mix(in srgb, var(--bar-color) 70%, hsl(var(--card))));
+    border-top: 3px solid var(--bar-color);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard-overview * { transition: none !important; }
+  }
   .scrollbar-thin {
     scrollbar-width: thin;
   }

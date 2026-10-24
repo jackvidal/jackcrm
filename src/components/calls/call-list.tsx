@@ -30,7 +30,8 @@ export function CallList({ calls }: { calls: Call[] }) {
         {calls.map((call) => (
           <li
             key={call.id}
-            className="rounded-lg border border-border bg-card p-4"
+            id={`call-${call.id}`}
+            className="scroll-mt-6 rounded-lg border border-border bg-card p-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">

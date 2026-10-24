@@ -53,6 +53,7 @@ export async function createCallAction(
   });
 
   revalidatePath(`/leads/${parsed.data.leadId}`);
+  revalidatePath("/dashboard");
   return { ok: true };
 }
 
@@ -96,6 +97,7 @@ export async function updateCallAction(
   });
 
   revalidatePath(`/leads/${existing.leadId}`);
+  revalidatePath("/dashboard");
   return { ok: true };
 }
 
@@ -109,4 +111,5 @@ export async function deleteCallAction(callId: string) {
 
   await db.call.delete({ where: { id: callId } });
   revalidatePath(`/leads/${call.leadId}`);
+  revalidatePath("/dashboard");
 }

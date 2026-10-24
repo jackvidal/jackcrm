@@ -50,6 +50,7 @@ export async function POST(
     });
 
     revalidatePath(`/leads/${call.leadId}`);
+    revalidatePath("/dashboard");
     return NextResponse.json({
       call: updated,
       transcriptLength: result.text.length,

@@ -47,6 +47,7 @@ export async function POST(
     });
 
     revalidatePath(`/leads/${call.leadId}`);
+    revalidatePath("/dashboard");
     return NextResponse.json({ call: updated });
   } catch (err) {
     console.error("Call analysis failed", err);

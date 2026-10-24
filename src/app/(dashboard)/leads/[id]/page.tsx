@@ -184,7 +184,7 @@ export default async function LeadDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="calls" className="scroll-mt-6">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>{t.calls.title}</CardTitle>
               <LogCallButton leadId={lead.id} />

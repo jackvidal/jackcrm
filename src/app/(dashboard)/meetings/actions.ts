@@ -54,6 +54,7 @@ export async function createMeetingAction(
   });
 
   revalidatePath("/meetings");
+  revalidatePath("/dashboard");
   revalidatePath(`/leads/${parsed.data.leadId}`);
   return { ok: true };
 }
@@ -87,6 +88,7 @@ export async function updateMeetingAction(
   });
 
   revalidatePath("/meetings");
+  revalidatePath("/dashboard");
   revalidatePath(`/leads/${existing.leadId}`);
   return { ok: true };
 }
@@ -101,5 +103,6 @@ export async function deleteMeetingAction(meetingId: string) {
 
   await db.meeting.delete({ where: { id: meetingId } });
   revalidatePath("/meetings");
+  revalidatePath("/dashboard");
   revalidatePath(`/leads/${meeting.leadId}`);
 }

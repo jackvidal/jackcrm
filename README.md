@@ -40,6 +40,12 @@ npm run typecheck
 npm run build
 ```
 
+## Dashboard overview
+
+The home screen shows owner-scoped lead totals, recorded calls (only calls with an attached audio file), leads currently in `PROPOSAL_SENT`, and won deals. The chart switches between the current nine-stage distribution and lead sources; stage columns link to filtered leads. Source overflow groups under “additional sources” without losing counts. Win rate is won / (won + lost), and stays blank until an outcome exists. These are current pipeline counts, not historical transition or revenue reports.
+
+Follow-ups due today/overdue use the same Asia/Bangkok date-only convention as lead filters and exclude closed/lost leads. The overview also includes upcoming scheduled meetings, pending tasks, recent leads and call analysis summaries. Recording shortcuts select a lead and open its calls section; individual recordings link to their exact call. “Proposals in follow-up” lists leads in proposal/negotiation stages. The CRM still has no proposal document/sending or deal-value model, so the dashboard does not claim document sends or invent monetary amounts. Empty accounts show actionable empty states. Colors follow account branding and pipeline colors.
+
 ## Lead pipeline and views
 
 Lead stages: new, contacted, follow-up, meeting scheduled/completed, proposal sent, negotiation, won and lost. Existing stage IDs remain valid; no live leads are automatically relabeled. Cal.com and manual meeting creation can advance early stages, but never regress proposal, negotiation, won or lost stages.
